@@ -10,11 +10,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
-//specify a class as JPA entity
 @Entity
-@Table(name = "employees")
-public class Employee {
+@Table(name = "students")
+public class Student {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
