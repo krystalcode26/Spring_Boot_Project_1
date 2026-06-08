@@ -12,8 +12,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
-//@ Controller
+//These four annotation used for mark class as Spring bBean.
+//@Controller
+//@RestController
+//@Repository
 @Service
 @AllArgsConstructor
 public class StudentServiceImpl implements StudentService {
