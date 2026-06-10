@@ -1,5 +1,6 @@
 package net.javaguides.ems.service.impl;
 
+// import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import net.javaguides.ems.dto.StudentDto;
 import net.javaguides.ems.entity.Student;
@@ -22,10 +23,24 @@ public class StudentServiceImpl implements StudentService {
 
   private final StudentRepository studentRepository;
 
+//  @PostConstruct
+//  public void initMetrics(){
+//    createCounter = Counter.builder("student.created.total")
+//            .description("Total employees created")
+//            .register(meterRegistry);
+//    deleteCounter = Counter.builder("student.deleted.total")
+//            .description("Total students deleted")
+//            .register(meterRegistry);
+//    Gauge.builder("student.count", studentRepository,);
+//  }
+  /*
+  map to employee -> repository to save students -> increase counter -> return
+   */
   @Override
   public StudentDto createStudent(StudentDto studentDto) {
     Student student = StudentMapper.mapToStudent(studentDto);
     Student savedStudent = studentRepository.save(student);
+    //createCounter.increment();
     return StudentMapper.mapToStudentDto(savedStudent);
   }
 
