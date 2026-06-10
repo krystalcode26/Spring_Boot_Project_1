@@ -28,6 +28,7 @@ public class StudentController {
   //class template which inherits the student service interface. -> studentService object No need to instantiate.(IOC)
   private final StudentService studentService;
 
+  //Build Add Student REST API
   @PostMapping
   public ResponseEntity<StudentDto> createStudent(@RequestBody StudentDto studentDto) {
     // casting the request to the service layer (studentService) to call APIs(studentDto) to process use requests.
@@ -35,18 +36,22 @@ public class StudentController {
     return new ResponseEntity<>(savedStudent, HttpStatus.CREATED);
   }
 
+  //Build Get student REST API
   @GetMapping("{id}")
   public ResponseEntity<StudentDto> getStudentById(@PathVariable("id") Long studentId) {
     StudentDto studentDto = studentService.getStudentById(studentId);
     return ResponseEntity.ok(studentDto);
   }
 
+  //Build Get All Students REST API
   @GetMapping
   public ResponseEntity<List<StudentDto>> getAllStudents() {
+    //Integer i1 = Integer.valueOf(1);
     List<StudentDto> students = studentService.getAllStudents();
     return ResponseEntity.ok(students);
   }
 
+  //Build Update students REST API
   @PutMapping("{id}")
   public ResponseEntity<StudentDto> updateStudent(@PathVariable("id") Long studentId,
                                                   @RequestBody StudentDto updatedStudent) {
@@ -54,6 +59,11 @@ public class StudentController {
     return ResponseEntity.ok(studentDto);
   }
 
+  //Data payload - the actual data transmitted between a client and server in an HTTP request or response.
+  //@RequestHeader
+  //@RequestParam
+
+  //Build Delete students REST API
   @DeleteMapping("{id}")
   public ResponseEntity<String> deleteStudent(@PathVariable("id") Long studentId) {
     studentService.deleteStudent(studentId);
