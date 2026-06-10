@@ -16,7 +16,7 @@ public class StudentServiceAspect {
   //@Pointcut - starting point (package path)
   // * anything within
   // WHERE : the StudentServiceImpl package will
-  //affects the whole @Pointcut logic later
+  // affects the whole @Pointcut logic later
   @Pointcut("execution(* net.javaguides.ems.service.impl.StudentServiceImpl.*(..))")
   //the Pointcut name should be the same or it won't do anything
   //the name here is serviceMethods
