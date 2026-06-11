@@ -1,5 +1,6 @@
 package net.javaguides.ems.controller;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import net.javaguides.ems.dto.StudentDto;
 import net.javaguides.ems.service.StudentService;
@@ -27,10 +28,11 @@ public class StudentController {
   //studentService here is a Spring Bean object that we defined and configured at service annotation on student service implementation
   //class template which inherits the student service interface. -> studentService object No need to instantiate.(IOC)
   private final StudentService studentService;
+  //private final StudentSolutionService studentSolutionService;
 
   //Build Add Student REST API
   @PostMapping
-  public ResponseEntity<StudentDto> createStudent(@RequestBody StudentDto studentDto) {
+  public ResponseEntity<StudentDto> createStudent(@Valid @RequestBody StudentDto studentDto) {
     // casting the request to the service layer (studentService) to call APIs(studentDto) to process use requests.
     StudentDto savedStudent = studentService.createStudent(studentDto);
     return new ResponseEntity<>(savedStudent, HttpStatus.CREATED);
@@ -54,7 +56,7 @@ public class StudentController {
   //Build Update students REST API
   @PutMapping("{id}")
   public ResponseEntity<StudentDto> updateStudent(@PathVariable("id") Long studentId,
-                                                  @RequestBody StudentDto updatedStudent) {
+                                                  @Valid @RequestBody StudentDto updatedStudent) {
     StudentDto studentDto = studentService.updateStudent(studentId, updatedStudent);
     return ResponseEntity.ok(studentDto);
   }
