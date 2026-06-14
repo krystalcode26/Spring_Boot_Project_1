@@ -26,20 +26,8 @@ public class StudentServiceImpl implements StudentService {
   private final StudentRepository studentRepository;
   private final StudentNotificationService notificationService;
 
-//  @PostConstruct
-//  public void initMetrics(){
-//    createCounter = Counter.builder("student.created.total")
-//            .description("Total employees created")
-//            .register(meterRegistry);
-//    deleteCounter = Counter.builder("student.deleted.total")
-//            .description("Total students deleted")
-//            .register(meterRegistry);
-//    Gauge.builder("student.count", studentRepository,);
-//  }
-  /*
-  map to employee -> repository to save students -> increase counter -> return
-   */
   @Override
+  @CacheEvict(value = "students", allEntries = true)
   public StudentDto createStudent(StudentDto studentDto) {
     log.info("Creating student with email={}", studentDto.getEmail());
     Student student = StudentMapper.mapToStudent(studentDto);
@@ -50,6 +38,7 @@ public class StudentServiceImpl implements StudentService {
   }
 
   @Override
+  @Cacheable(value = "students", key = "#studentId")
   public StudentDto getStudentById(Long studentId) {
     log.info("Fetching student from database, id={}", studentId);
     Student student = studentRepository.findById(studentId)
@@ -59,6 +48,7 @@ public class StudentServiceImpl implements StudentService {
   }
 
   @Override
+  @Cacheable(value = "students", key = "'all'")
   public List<StudentDto> getAllStudents() {
     log.info("Fetching all students from database");
     List<Student> students = studentRepository.findAll();
@@ -69,6 +59,7 @@ public class StudentServiceImpl implements StudentService {
   }
 
   @Override
+  @CacheEvict(value = "students", allEntries = true)
   public StudentDto updateStudent(Long studentId, StudentDto updatedStudent) {
     log.info("Updating student id={}", studentId);
     Student student = studentRepository.findById(studentId).orElseThrow(
@@ -84,6 +75,7 @@ public class StudentServiceImpl implements StudentService {
   }
 
   @Override
+  @CacheEvict(value = "students", allEntries = true)
   public void deleteStudent(Long studentId) {
     log.info("Deleting student id={}", studentId);
     studentRepository.findById(studentId).orElseThrow(
