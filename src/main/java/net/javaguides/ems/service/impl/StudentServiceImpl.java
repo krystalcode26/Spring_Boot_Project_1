@@ -1,5 +1,9 @@
 package net.javaguides.ems.service.impl;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import net.javaguides.ems.dto.StudentDto;
 import net.javaguides.ems.entity.Student;
@@ -17,6 +21,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+//These four annotation used for mark class as Spring bBean.
+//@Controller
+//@RestController
+//@Repository
+//@AllArgsConstructor and @RequiredArgsConstructor are both Lombok annotations that generate a constructor 
+//@RequiredArgsConstructor: Generates a constructor only for final fields (and fields marked @NonNull).
 @Service
 @RequiredArgsConstructor
 public class StudentServiceImpl implements StudentService {
@@ -24,28 +34,31 @@ public class StudentServiceImpl implements StudentService {
   private static final Logger log = LoggerFactory.getLogger(StudentServiceImpl.class);
 
   private final StudentRepository studentRepository;
-  private final StudentNotificationService notificationService;
+  private final MeterRegistry meterRegistry;
 
-//  @PostConstruct
-//  public void initMetrics(){
-//    createCounter = Counter.builder("student.created.total")
-//            .description("Total employees created")
-//            .register(meterRegistry);
-//    deleteCounter = Counter.builder("student.deleted.total")
-//            .description("Total students deleted")
-//            .register(meterRegistry);
-//    Gauge.builder("student.count", studentRepository,);
-//  }
-  /*
-  map to employee -> repository to save students -> increase counter -> return
-   */
+  private Counter createCounter;
+  private Counter deleteCounter;
+
+  @PostConstruct
+  public void initMetrics() {
+    createCounter = Counter.builder("student.created.total")
+        .description("Total students created")
+        .register(meterRegistry);
+    deleteCounter = Counter.builder("student.deleted.total")
+        .description("Total students deleted")
+        .register(meterRegistry);
+    Gauge.builder("student.count", studentRepository, StudentRepository::count)
+        .description("Current number of students in database")
+        .register(meterRegistry);
+  }
+
   @Override
   public StudentDto createStudent(StudentDto studentDto) {
     log.info("Creating student with email={}", studentDto.getEmail());
     Student student = StudentMapper.mapToStudent(studentDto);
     student.setId(null);
     Student savedStudent = studentRepository.save(student);
-    notificationService.sendWelcomeNotification(savedStudent.getEmail());
+    createCounter.increment();
     return StudentMapper.mapToStudentDto(savedStudent);
   }
 
@@ -91,5 +104,6 @@ public class StudentServiceImpl implements StudentService {
     );
 
     studentRepository.deleteById(studentId);
+    deleteCounter.increment();
   }
 }
