@@ -10,7 +10,7 @@ import net.javaguides.ems.entity.Student;
 import net.javaguides.ems.exception.ResourceNotFoundException;
 import net.javaguides.ems.mapper.StudentMapper;
 import net.javaguides.ems.repository.StudentRepository;
-import net.javaguides.ems.service.StudentNotificationService;
+//import net.javaguides.ems.service.StudentNotificationService;
 import net.javaguides.ems.service.StudentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
