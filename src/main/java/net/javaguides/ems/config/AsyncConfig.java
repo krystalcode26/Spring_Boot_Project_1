@@ -21,4 +21,15 @@ public class AsyncConfig {
     executor.initialize();
     return executor;
   }
+
+  @Bean(name = "integrationExecutor")
+  public Executor integrationExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setCorePoolSize(4);
+    executor.setMaxPoolSize(8);
+    executor.setQueueCapacity(200);
+    executor.setThreadNamePrefix("integration-");
+    executor.initialize();
+    return executor;
+  }
 }

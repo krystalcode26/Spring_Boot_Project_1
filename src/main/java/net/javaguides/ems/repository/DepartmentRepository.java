@@ -15,6 +15,15 @@ public class DepartmentRepository {
   @PersistenceContext
   private EntityManager entityManager;
 
+  @Transactional
+  public Department save(Department department) {
+    if (department.getDeptId() == null) {
+      entityManager.persist(department);
+      return department;
+    }
+    return entityManager.merge(department);
+  }
+
   @Transactional(readOnly = true)
   public Optional<Department> findById(Integer deptId) {
     return Optional.ofNullable(entityManager.find(Department.class, deptId));
