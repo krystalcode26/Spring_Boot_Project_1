@@ -40,6 +40,12 @@ public class GlobalExceptionHandler {
     return new ErrorResponse(404, ex.getMessage(), LocalDateTime.now(), null);
   }
 
+  @ExceptionHandler(DownstreamServiceException.class)
+  @ResponseStatus(HttpStatus.BAD_GATEWAY)
+  public ErrorResponse handleDownstream(DownstreamServiceException ex) {
+    return new ErrorResponse(502, ex.getMessage(), LocalDateTime.now(), null);
+  }
+
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ErrorResponse handleAll(Exception ex){

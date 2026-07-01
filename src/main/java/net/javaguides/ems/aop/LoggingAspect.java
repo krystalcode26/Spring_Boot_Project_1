@@ -2,7 +2,6 @@ package net.javaguides.ems.aop;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
@@ -20,31 +19,37 @@ public class LoggingAspect {
   private static final Logger log = LoggerFactory.getLogger(LoggingAspect.class);
 
   @Pointcut("execution(* net.javaguides.ems.service.impl.StudentServiceImpl.*(..))")
-  
-  // this is a pointcut expression that matches all methods in the StudentServiceImpl class
   public void studentServiceMethods() {}
 
-  @Before("studentServiceMethods()")
+  @Pointcut("execution(* net.javaguides.ems.service.impl.NameAggregationServiceImpl.*(..))")
+  public void nameAggregationServiceMethods() {}
+
+  @Pointcut("execution(* net.javaguides.ems.client.*.*(..))")
+  public void integrationClientMethods() {}
+
+  @Pointcut("execution(* net.javaguides.ems.service.NameAggregationIntegrationExecutor.*(..))")
+  public void nameAggregationIntegrationMethods() {}
+
+  @Before("studentServiceMethods() || nameAggregationServiceMethods() || integrationClientMethods() || nameAggregationIntegrationMethods()")
   public void logBefore(JoinPoint jp) {
     log.info("[Before] {} args={}", jp.getSignature().toShortString(), jp.getArgs());
   }
 
-  @AfterReturning(pointcut = "studentServiceMethods()", returning = "result")
+  @AfterReturning(
+      pointcut = "studentServiceMethods() || nameAggregationServiceMethods() || integrationClientMethods() || nameAggregationIntegrationMethods()",
+      returning = "result")
   public void logAfterReturning(JoinPoint jp, Object result) {
     log.info("[After Returning] {} => {}", jp.getSignature().toShortString(), result);
   }
 
-  @AfterThrowing(pointcut = "studentServiceMethods()", throwing = "ex")
+  @AfterThrowing(
+      pointcut = "studentServiceMethods() || nameAggregationServiceMethods() || integrationClientMethods() || nameAggregationIntegrationMethods()",
+      throwing = "ex")
   public void logAfterThrowing(JoinPoint jp, Exception ex) {
     log.warn("[After Throwing] {} threw: {}", jp.getSignature().toShortString(), ex.getMessage());
   }
 
-  @After("studentServiceMethods()")
-  public void logAfter(JoinPoint jp) {
-    log.info("[After] {} completed", jp.getSignature().toShortString());
-  }
-
-  @Around("studentServiceMethods()")
+  @Around("studentServiceMethods() || nameAggregationServiceMethods() || integrationClientMethods() || nameAggregationIntegrationMethods()")
   public Object measureTime(ProceedingJoinPoint jp) throws Throwable {
     long start = System.currentTimeMillis();
     Object result = jp.proceed();
