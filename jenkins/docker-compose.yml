@@ -11,9 +11,11 @@ services:
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
-      - /home/ec2-user:/home/ec2-user
+      - ${COMPOSE_DIR:-..}:/home/ec2-user/ems-backend
     environment:
-      EC2_HOST: 18.225.218.150
+      JENKINS_IN_DOCKER: "true"
+      COMPOSE_DIR: /home/ec2-user/ems-backend
+      EC2_HOST: ${EC2_HOST:-18.225.218.150}
 
 volumes:
   jenkins_home:
