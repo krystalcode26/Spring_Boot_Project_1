@@ -8,7 +8,13 @@ import lombok.Setter;
 
 @Getter
 @Setter
+
+//is a Lombok annotation that generates a constructor with no arguments. 
+// It is commonly used with JPA entities because Hibernate requires a default constructor to instantiate objects through reflection.
 @NoArgsConstructor
+
+//Lombok annotation that automatically generates a constructor containing all fields of the class.
+
 @AllArgsConstructor
 @Entity
 @Table(name = "students")
