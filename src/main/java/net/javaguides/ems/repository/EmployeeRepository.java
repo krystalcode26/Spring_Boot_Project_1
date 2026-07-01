@@ -27,13 +27,19 @@ public class EmployeeRepository {
 
   @Transactional(readOnly = true)
   public Optional<Employee> findById(Long empId) {
-    return Optional.ofNullable(entityManager.find(Employee.class, empId));
+    List<Employee> results = entityManager.createQuery(
+            "SELECT e FROM Employee e LEFT JOIN FETCH e.departments WHERE e.empId = :empId",
+            Employee.class)
+        .setParameter("empId", empId)
+        .getResultList();
+    return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
   }
 
   @Transactional(readOnly = true)
   public List<Employee> findAll() {
-    return entityManager
-        .createQuery("SELECT e FROM Employee e ORDER BY e.empId", Employee.class)
+    return entityManager.createQuery(
+            "SELECT DISTINCT e FROM Employee e LEFT JOIN FETCH e.departments ORDER BY e.empId",
+            Employee.class)
         .getResultList();
   }
 
