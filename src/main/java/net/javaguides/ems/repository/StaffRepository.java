@@ -18,6 +18,12 @@ import java.util.Optional;
 @Repository
 public class StaffRepository {
   //RowMapper-maps the result set to a Java object(manual mapping)
+  /*
+   * It converts each database row (ResultSet) into a Staff object,
+   * similar to how JPA automatically maps rows to entities.
+   * RowMapper is used only for mapping a database ResultSet into Java objects,
+   * so it is typically used with SELECT queries.
+   * */
   private static final RowMapper<Staff> ROW_MAPPER = (rs, rowNum) -> new Staff(
       rs.getLong("id"),
       rs.getString("first_name"),
@@ -44,6 +50,7 @@ public class StaffRepository {
       //queryForObject-executes a query and returns a single object
       //ROW_MAPPER-maps the result set to a Java object
       //returns an Optional of the staff
+
       Staff staff = jdbcTemplate.queryForObject(
           "SELECT id, first_name, last_name, email FROM staffs WHERE id = ?",
           ROW_MAPPER,
@@ -67,36 +74,56 @@ public class StaffRepository {
     jdbcTemplate.update("DELETE FROM staffs WHERE id = ?", id);
   }
 
-  public long count() {
-    Long count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM staffs", Long.class);
-    return count != null ? count : 0L;
-  }
+//  public long count() {
+//    Long count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM staffs", Long.class);
+//    return count != null ? count : 0L;
+//  }
 
+
+  /*
+  * An INSERT operation does not return a ResultSet; it only returns the number of affected rows
+  * and optionally a generated key.
+  * */
   private Staff insert(Staff staff) {
     //GeneratedKeyHolder reads PostgreSQL’s auto-generated id
     //KeyHolder-holds the generated key
+    /* GeneratedKeyHolder is used to retrieve auto-generated primary keys from the database
+     after an INSERT operation.
+     */
     KeyHolder keyHolder = new GeneratedKeyHolder();
-
+    //2. execute insert
     jdbcTemplate.update(connection -> {
-      //PreparedStatement-prepared statement for the query,
-      //Safer — values are sent separately from the SQL
+      //3. Create PreparedStatement-prepared statement for the query,
+      //Safer — values are sent separately from the SQL, prevent SQL Injection.
       //Template with ? placeholders
       PreparedStatement ps = connection.prepareStatement(
           "INSERT INTO staffs (first_name, last_name, email) VALUES (?, ?, ?)",
 
-          //Statement.RETURN_GENERATED_KEYS is not a Statement query.
-          //It is a constant (an int flag) telling prepareStatement: 
-          // after this INSERT, give me the auto-generated id.
+          /* 5. Statement.RETURN_GENERATED_KEYS is not a Statement query.
+          It is a constant (an int flag) telling prepareStatement:
+          after this INSERT, give me the auto-generated id. -- Ex: generated id = 5
+          It tells JDBC to return the generated ID, and Spring stores it in the KeyHolder.*/
           Statement.RETURN_GENERATED_KEYS
       );
+
+      //4. set parameters
+      /*
+      INSERT INTO staffs (first_name,last_name,email) VALUES ('Tom','Lee','tom@gmail.com')
+       */
       ps.setString(1, staff.getFirstName());
       ps.setString(2, staff.getLastName());
       ps.setString(3, staff.getEmail());
+
+      //6: Return PreparedStatement - Spring executes it.
       return ps;
+      //7: Pass KeyHolder
+      /*  Execute INSERT, Get generated id, Store id in keyHolder */
     }, keyHolder);
 
+    //8: Read Generated ID  Ex: key = 5
     Number key = keyHolder.getKey();
     if (key != null) {
+      //9: Set Back to Java Object Entity, Before insert: Staff{id=null}, After insert: Staff{id=5}
       staff.setId(key.longValue());
     }
     return staff;
