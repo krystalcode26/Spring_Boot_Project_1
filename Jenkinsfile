@@ -65,11 +65,24 @@ pipeline {
                 branch 'dev'
             }
             steps {
-                sshagent(credentials: ['ec2-ssh-key']) {
-                    sh '''
-                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} \
-                          'bash -s' < scripts/ec2-deploy.sh
-                    '''
+                script {
+                    if (env.JENKINS_IN_DOCKER == 'true') {
+                        sh '''
+                            COMPOSE_FILE="${COMPOSE_DIR}/docker-compose.yml"
+                            docker compose -f "$COMPOSE_FILE" pull app
+                            docker compose -f "$COMPOSE_FILE" up -d app
+                            sleep 15
+                            curl -sf http://localhost:8088/actuator/health | head -c 500 \
+                              || echo "Health check failed — see: docker compose -f $COMPOSE_FILE logs app --tail 30"
+                        '''
+                    } else {
+                        sshagent(credentials: ['ec2-ssh-key']) {
+                            sh '''
+                                ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} \
+                                  'bash -s' < scripts/ec2-deploy.sh
+                            '''
+                        }
+                    }
                 }
             }
         }

@@ -2,16 +2,23 @@
 # Run on EC2 after a new image is pushed to Docker Hub.
 set -e
 
-cd "${HOME}"
+COMPOSE_DIR="${COMPOSE_DIR:-${HOME}/ems-backend}"
+COMPOSE_FILE="${COMPOSE_FILE:-${COMPOSE_DIR}/docker-compose.yml}"
 
-echo "Pulling latest image..."
-docker compose pull
+if [ ! -f "$COMPOSE_FILE" ]; then
+  COMPOSE_FILE="${HOME}/docker-compose.yml"
+fi
 
-echo "Starting services..."
-docker compose up -d
+echo "Using compose file: $COMPOSE_FILE"
+
+echo "Pulling latest app image..."
+docker compose -f "$COMPOSE_FILE" pull app
+
+echo "Starting app service..."
+docker compose -f "$COMPOSE_FILE" up -d app
 
 echo "Container status:"
-docker compose ps
+docker compose -f "$COMPOSE_FILE" ps
 
 echo "Health check:"
 sleep 15
