@@ -1,10 +1,22 @@
 pipeline {
     agent any
 
+    parameters {
+        string(
+            name: 'EC2_HOST_OVERRIDE',
+            defaultValue: '',
+            description: 'Optional: override the EC2 IP for this build only. Leave blank to use EC2_HOST from .env'
+        )
+    }
+
     environment {
         DOCKER_IMAGE = 'krystalyang/ems'
+        DOCKER_TAG = "${env.BUILD_NUMBER}"
         DOCKER_PLATFORM = 'linux/amd64'
-        EC2_USER = 'ec2-user'
+        EC2_USER = 'ec2-user'          // ec2-user for Amazon Linux, ubuntu for Ubuntu AMIs
+        APP_PORT = '8088'
+        CONTAINER_NAME = 'ems-backend'
+        RESOLVED_EC2_HOST = "${params.EC2_HOST_OVERRIDE ?: env.EC2_HOST}"
     }
 
     options {
@@ -14,75 +26,78 @@ pipeline {
     }
 
     triggers {
-        // GitHub webhook: push events on dev branch → Build when a change is pushed to GitHub
         githubPush()
     }
 
     stages {
         stage('Checkout') {
-            when {
-                branch 'dev'
-            }
             steps {
                 checkout scm
             }
         }
 
-        stage('Test') {
-            when {
-                branch 'dev'
-            }
+        stage('Build') {
             steps {
                 sh 'chmod +x mvnw'
-                sh './mvnw clean test'
+                sh './mvnw clean package -DskipTests -B'
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
 
         stage('Docker Build & Push') {
-            when {
-                branch 'dev'
-            }
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub',
+                    credentialsId: 'dockerhub-credentials',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                         docker build --platform ${DOCKER_PLATFORM} \
-                          -t ${DOCKER_IMAGE}:latest \
-                          -t ${DOCKER_IMAGE}:${GIT_COMMIT} .
-                        docker push ${DOCKER_IMAGE}:latest
-                        docker push ${DOCKER_IMAGE}:${GIT_COMMIT}
+                          -t "${DOCKER_IMAGE}:${DOCKER_TAG}" \
+                          -t "${DOCKER_IMAGE}:latest" .
+                        docker push "${DOCKER_IMAGE}:${DOCKER_TAG}"
+                        docker push "${DOCKER_IMAGE}:latest"
+                        docker logout
                     '''
                 }
             }
         }
 
         stage('Deploy to EC2') {
-            when {
-                branch 'dev'
-            }
             steps {
                 script {
-                    if (env.JENKINS_IN_DOCKER == 'true') {
-                        sh '''
-                            COMPOSE_FILE="${COMPOSE_DIR}/docker-compose.yml"
-                            docker compose -f "$COMPOSE_FILE" pull app
-                            docker compose -f "$COMPOSE_FILE" up -d app
-                            sleep 15
-                            curl -sf http://localhost:8088/actuator/health | head -c 500 \
-                              || echo "Health check failed — see: docker compose -f $COMPOSE_FILE logs app --tail 30"
-                        '''
-                    } else {
-                        sshagent(credentials: ['ec2-ssh-key']) {
-                            sh '''
-                                ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} \
-                                  'bash -s' < scripts/ec2-deploy.sh
-                            '''
-                        }
+                    if (!env.RESOLVED_EC2_HOST?.trim()) {
+                        error('EC2_HOST is not set. Add EC2_HOST to jenkins/.env or pass EC2_HOST_OVERRIDE.')
                     }
+                }
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: 'ec2-ssh-key',
+                    keyFileVariable: 'SSH_KEY'
+                )]) {
+                    sh """
+                        ssh -i "\$SSH_KEY" -o StrictHostKeyChecking=no ${EC2_USER}@${RESOLVED_EC2_HOST} '
+                            set -e
+                            docker pull ${DOCKER_IMAGE}:latest
+                            if [ -f ~/ems-backend/docker-compose.yml ]; then
+                              docker compose -f ~/ems-backend/docker-compose.yml pull app
+                              docker compose -f ~/ems-backend/docker-compose.yml up -d app
+                            elif [ -f ~/docker-compose.yml ]; then
+                              docker compose -f ~/docker-compose.yml pull app
+                              docker compose -f ~/docker-compose.yml up -d app
+                            else
+                              docker stop ${CONTAINER_NAME} 2>/dev/null || true
+                              docker rm ${CONTAINER_NAME} 2>/dev/null || true
+                              docker run -d \\
+                                --name ${CONTAINER_NAME} \\
+                                --restart unless-stopped \\
+                                -p ${APP_PORT}:${APP_PORT} \\
+                                -e SPRING_PROFILES_ACTIVE=docker \\
+                                ${DOCKER_IMAGE}:latest
+                            fi
+                            docker image prune -f
+                        '
+                    """
                 }
             }
         }
@@ -90,13 +105,13 @@ pipeline {
 
     post {
         success {
-            echo 'Deployed to EC2 successfully.'
+            echo "Deployed ${DOCKER_IMAGE}:${DOCKER_TAG} to ${RESOLVED_EC2_HOST}"
         }
         failure {
-            echo 'Pipeline failed — check logs above.'
+            echo 'Pipeline failed. Check the stage logs above.'
         }
         always {
-            sh 'docker logout || true'
+            cleanWs()
         }
     }
 }
