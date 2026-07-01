@@ -1,3 +1,4 @@
+## build up docker image -- jenkins pipeline
 FROM jenkins/jenkins:lts-jdk21
 
 USER root
