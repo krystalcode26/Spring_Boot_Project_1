@@ -40,11 +40,21 @@ pipeline {
             }
         }
 
-        /* build image -- maven*/
-        stage('Build') {
+        stage('Test & Coverage') {
             steps {
                 sh 'chmod +x mvnw'
-                sh './mvnw clean package -DskipTests -B'
+                sh './mvnw clean test -B'
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/**/*.xml'
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh './mvnw package -DskipTests -B'
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }

@@ -1,0 +1,110 @@
+package net.javaguides.ems.service.impl;
+
+import net.javaguides.ems.dto.EmployeeDto;
+import net.javaguides.ems.entity.Department;
+import net.javaguides.ems.entity.Employee;
+import net.javaguides.ems.exception.ResourceNotFoundException;
+import net.javaguides.ems.repository.DepartmentRepository;
+import net.javaguides.ems.repository.EmployeeRepository;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class EmployeeServiceImplTest {
+
+  @Mock
+  private EmployeeRepository employeeRepository;
+
+  @Mock
+  private DepartmentRepository departmentRepository;
+
+  @InjectMocks
+  private EmployeeServiceImpl employeeService;
+
+  @Test
+  void createEmployee_resolvesDepartmentsAndSaves() {
+    EmployeeDto request = new EmployeeDto(null, "Alice", List.of(1), 30, new BigDecimal("75000"));
+    Department department = new Department(1, "Engineering", null);
+    Employee saved = new Employee();
+    saved.setEmpId(1L);
+    saved.setEmpName("Alice");
+    saved.setAge(30);
+    saved.setSalary(new BigDecimal("75000"));
+    saved.setDepartments(Set.of(department));
+
+    when(departmentRepository.findById(1)).thenReturn(Optional.of(department));
+    when(employeeRepository.save(any(Employee.class))).thenReturn(saved);
+
+    EmployeeDto response = employeeService.createEmployee(request);
+
+    assertThat(response.getEmpId()).isEqualTo(1L);
+    assertThat(response.getDepartmentIds()).containsExactly(1);
+    verify(departmentRepository).findById(1);
+  }
+
+  @Test
+  void getEmployeeById_returnsDtoWhenFound() {
+    Employee employee = new Employee();
+    employee.setEmpId(1L);
+    employee.setEmpName("Alice");
+    employee.setDepartments(Set.of());
+
+    when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
+
+    EmployeeDto dto = employeeService.getEmployeeById(1L);
+
+    assertThat(dto.getEmpId()).isEqualTo(1L);
+    assertThat(dto.getEmpName()).isEqualTo("Alice");
+    verify(employeeRepository).findById(1L);
+  }
+
+  @Test
+  void getEmployeeById_throwsWhenNotFound() {
+    when(employeeRepository.findById(99L)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> employeeService.getEmployeeById(99L))
+        .isInstanceOf(ResourceNotFoundException.class)
+        .hasMessageContaining("99");
+  }
+
+  @Test
+  void getAllEmployees_returnsMappedList() {
+    Employee employee = new Employee();
+    employee.setEmpId(1L);
+    employee.setEmpName("Alice");
+    employee.setDepartments(Set.of());
+    when(employeeRepository.findAll()).thenReturn(List.of(employee));
+
+    List<EmployeeDto> employees = employeeService.getAllEmployees();
+
+    assertThat(employees).hasSize(1);
+    assertThat(employees.get(0).getEmpName()).isEqualTo("Alice");
+  }
+
+  @Test
+  void deleteEmployee_deletesWhenFound() {
+    Employee employee = new Employee();
+    employee.setEmpId(1L);
+    employee.setEmpName("Alice");
+    employee.setDepartments(Set.of());
+    when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
+
+    employeeService.deleteEmployee(1L);
+
+    verify(employeeRepository).deleteById(1L);
+  }
+}

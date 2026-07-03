@@ -1,0 +1,56 @@
+package net.javaguides.ems.mapper;
+
+import net.javaguides.ems.dto.EmployeeDto;
+import net.javaguides.ems.entity.Department;
+import net.javaguides.ems.entity.Employee;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class EmployeeMapperTest {
+
+  @Test
+  void mapToEmployeeDto_mapsAllFields() {
+    Department department = new Department();
+    department.setDeptId(1);
+    department.setDeptName("Engineering");
+
+    Employee employee = new Employee();
+    employee.setEmpId(10L);
+    employee.setEmpName("Alice");
+    employee.setAge(30);
+    employee.setSalary(new BigDecimal("75000.00"));
+    employee.setDepartments(Set.of(department));
+
+    EmployeeDto dto = EmployeeMapper.mapToEmployeeDto(employee);
+
+    assertThat(dto.getEmpId()).isEqualTo(10L);
+    assertThat(dto.getEmpName()).isEqualTo("Alice");
+    assertThat(dto.getDepartmentIds()).containsExactly(1);
+    assertThat(dto.getAge()).isEqualTo(30);
+    assertThat(dto.getSalary()).isEqualByComparingTo("75000.00");
+  }
+
+  @Test
+  void mapToEmployee_mapsAllFields() {
+    EmployeeDto dto = new EmployeeDto(
+        20L,
+        "Bob",
+        List.of(2, 3),
+        28,
+        new BigDecimal("65000.00")
+    );
+
+    Employee employee = EmployeeMapper.mapToEmployee(dto);
+
+    assertThat(employee.getEmpId()).isEqualTo(20L);
+    assertThat(employee.getEmpName()).isEqualTo("Bob");
+    assertThat(employee.getAge()).isEqualTo(28);
+    assertThat(employee.getSalary()).isEqualByComparingTo("65000.00");
+    assertThat(employee.getDepartments()).isEmpty();
+  }
+}
