@@ -9,6 +9,11 @@ pipeline {
             defaultValue: '',
             description: 'Optional: override the EC2 IP for this build only. Leave blank to use EC2_HOST from .env'
         )
+        booleanParam(
+            name: 'SONAR_ENABLED',
+            defaultValue: false,
+            description: 'Run SonarQube analysis and Quality Gate (requires SonarQube at http://sonarqube:9000)'
+        )
     }
 
     /* set up environment*/
@@ -40,11 +45,43 @@ pipeline {
             }
         }
 
-        /* build image -- maven*/
-        stage('Build') {
+        stage('Test & Coverage') {
             steps {
                 sh 'chmod +x mvnw'
-                sh './mvnw clean package -DskipTests -B'
+                sh './mvnw clean test -B'
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/**/*.xml'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            when {
+                expression { params.SONAR_ENABLED == true }
+            }
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    sh './mvnw sonar:sonar -B'
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            when {
+                expression { params.SONAR_ENABLED == true }
+            }
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh './mvnw package -DskipTests -B'
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }

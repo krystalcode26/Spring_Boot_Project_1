@@ -1,5 +1,15 @@
 # jenkins service
 # start docker container in local env
+#
+# SonarQube setup (one-time):
+# 1. docker compose up -d
+# 2. Open http://localhost:9000 (admin/admin), change password, create Global Analysis Token
+# 3. Jenkins -> Credentials -> Secret text ID: sonar-token
+# 4. Jenkins -> Manage Jenkins -> System -> SonarQube servers:
+#      Name: sonarqube, URL: http://sonarqube:9000, Token: sonar-token
+# 5. SonarQube -> Administration -> Webhooks -> http://jenkins:8080/sonarqube-webhook/
+# 6. SonarQube -> General Settings -> Server base URL: http://localhost:9000
+# 7. Jenkins build: check SONAR_ENABLED when running pipeline
 services:
   jenkins:
     build: .
@@ -9,7 +19,7 @@ services:
     user: root
     ports:
       - "8081:8080"                      # Jenkins UI -> http://localhost:8081
-      - "50000:50000"                    # Jenkins  agent port
+      - "50000:50000"                    # Jenkins agent port
     volumes:
       - jenkins_home:/var/jenkins_home   # persist Jenkins data
       - /var/run/docker.sock:/var/run/docker.sock
@@ -19,6 +29,24 @@ services:
       - .env
     environment:
       EC2_HOST: ${EC2_HOST:-18.225.218.150}
+    depends_on:
+      - sonarqube
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    restart: unless-stopped
+    ports:
+      - "9000:9000"                      # SonarQube UI -> http://localhost:9000
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
 
 volumes:
   jenkins_home:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
