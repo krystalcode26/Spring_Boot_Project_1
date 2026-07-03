@@ -63,7 +63,8 @@ pipeline {
             }
             steps {
                 withSonarQubeEnv('sonarqube') {
-                    sh './mvnw sonar:sonar -B'
+                    // Reuse JaCoCo output from Test stage; do not clean workspace
+                    sh './mvnw sonar:sonar -DskipTests -B'
                 }
             }
         }

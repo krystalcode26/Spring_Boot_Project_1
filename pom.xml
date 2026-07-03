@@ -34,6 +34,18 @@
 		<sonar.projectName>EMS Backend</sonar.projectName>
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 		<sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+		<sonar.junit.reportPaths>${project.build.directory}/surefire-reports</sonar.junit.reportPaths>
+		<!-- Exclude boilerplate from coverage so Sonar measures business logic -->
+		<sonar.coverage.exclusions>
+			**/SmsBackendApplication.java,
+			**/config/**,
+			**/dto/**,
+			**/entity/**,
+			**/exception/ErrorResponse.java,
+			**/aop/HandleNameAggregationFailure.java,
+			**/aop/LoggingAspect.java,
+			**/aop/DemoAspect.java
+		</sonar.coverage.exclusions>
 	</properties>
 	<dependencyManagement>
 		<dependencies>

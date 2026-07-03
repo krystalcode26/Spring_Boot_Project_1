@@ -12,11 +12,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FailedIntegrationRecoveryServiceTest {
@@ -69,6 +71,22 @@ class FailedIntegrationRecoveryServiceTest {
     recoveryService.replayPendingDownstreamRequests();
 
     verifyNoInteractions(repository);
+    verifyNoInteractions(restClient);
+  }
+
+  @Test
+  void replayPendingDownstreamRequests_doesNothingWhenNoPendingRows() {
+    ReflectionTestUtils.setField(recoveryService, "recoveryEnabled", true);
+    when(repository.findByStatusAndIntegrationType(
+        FailedIntegrationRequest.STATUS_PENDING,
+        FailedIntegrationRequest.TYPE_DOWNSTREAM))
+        .thenReturn(Collections.emptyList());
+
+    recoveryService.replayPendingDownstreamRequests();
+
+    verify(repository).findByStatusAndIntegrationType(
+        FailedIntegrationRequest.STATUS_PENDING,
+        FailedIntegrationRequest.TYPE_DOWNSTREAM);
     verifyNoInteractions(restClient);
   }
 }
