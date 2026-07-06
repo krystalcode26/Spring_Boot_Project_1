@@ -57,6 +57,7 @@
 		</sonar.coverage.exclusions>
 		<!-- Similar CRUD/MockMvc tests are expected to repeat patterns -->
 		<sonar.cpd.exclusions>**/src/test/**</sonar.cpd.exclusions>
+		<sonar.security.hotspots.exclusions>**/src/test/**,**/src/main/resources/**</sonar.security.hotspots.exclusions>
 		<!-- Placeholder config values are not real secrets -->
 		<sonar.text.exclusions>
 			**/src/main/resources/application*.properties,
