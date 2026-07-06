@@ -1,5 +1,6 @@
 package net.javaguides.ems.controller;
 
+import net.javaguides.ems.exception.GlobalExceptionHandler;
 import net.javaguides.ems.dto.EmployeeDto;
 import net.javaguides.ems.service.EmployeeService;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -34,7 +36,9 @@ class EmployeeControllerTest {
 
   @BeforeEach
   void setUp() {
-    mockMvc = MockMvcBuilders.standaloneSetup(new EmployeeController(employeeService)).build();
+    mockMvc = MockMvcBuilders.standaloneSetup(new EmployeeController(employeeService))
+        .setControllerAdvice(new GlobalExceptionHandler())
+        .build();
   }
 
   @Test
@@ -92,5 +96,18 @@ class EmployeeControllerTest {
                 """))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.empName").value("Alice Updated"));
+  }
+
+  @Test
+  void createEmployee_returns400_whenEmpNameBlank() throws Exception {
+    mockMvc.perform(post("/api/employees")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("""
+                {"empName":"","departmentIds":[1],"age":30,"salary":75000}
+                """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.errors.empName").exists());
+
+    verify(employeeService, never()).createEmployee(any());
   }
 }
