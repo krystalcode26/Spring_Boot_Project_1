@@ -156,6 +156,18 @@
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>${jacoco.version}</version>
+				<configuration>
+					<excludes>
+						<exclude>net.javaguides.ems.SmsBackendApplication</exclude>
+						<exclude>net.javaguides.ems.config.*</exclude>
+						<exclude>net.javaguides.ems.dto.*</exclude>
+						<exclude>net.javaguides.ems.entity.*</exclude>
+						<exclude>net.javaguides.ems.repository.*</exclude>
+						<exclude>net.javaguides.ems.aop.*</exclude>
+						<exclude>net.javaguides.ems.client.*</exclude>
+						<exclude>net.javaguides.ems.exception.ErrorResponse</exclude>
+					</excludes>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>
@@ -173,6 +185,44 @@
 								<format>HTML</format>
 								<format>XML</format>
 							</formats>
+							<excludes>
+								<exclude>net.javaguides.ems.SmsBackendApplication</exclude>
+								<exclude>net.javaguides.ems.config.*</exclude>
+								<exclude>net.javaguides.ems.dto.*</exclude>
+								<exclude>net.javaguides.ems.entity.*</exclude>
+								<exclude>net.javaguides.ems.repository.*</exclude>
+								<exclude>net.javaguides.ems.aop.*</exclude>
+								<exclude>net.javaguides.ems.client.*</exclude>
+								<exclude>net.javaguides.ems.exception.ErrorResponse</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>jacoco-check</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<includes>
+								<include>net.javaguides.ems.service.*</include>
+								<include>net.javaguides.ems.service.impl.*</include>
+								<include>net.javaguides.ems.controller.*</include>
+								<include>net.javaguides.ems.mapper.*</include>
+								<include>net.javaguides.ems.exception.*</include>
+							</includes>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>INSTRUCTION</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.90</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
 						</configuration>
 					</execution>
 				</executions>

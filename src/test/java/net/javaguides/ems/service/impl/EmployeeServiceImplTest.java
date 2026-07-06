@@ -107,4 +107,59 @@ class EmployeeServiceImplTest {
 
     verify(employeeRepository).deleteById(1L);
   }
+
+  @Test
+  void updateEmployee_updatesDepartmentsAndFields() {
+    Employee existing = new Employee();
+    existing.setEmpId(1L);
+    existing.setEmpName("Alice");
+    existing.setAge(30);
+    existing.setSalary(new BigDecimal("75000"));
+    existing.setDepartments(Set.of());
+
+    Department engineering = new Department(2, "Engineering", null);
+    EmployeeDto update = new EmployeeDto(null, "Alice Updated", List.of(2), 31, new BigDecimal("80000"));
+    Employee saved = new Employee();
+    saved.setEmpId(1L);
+    saved.setEmpName("Alice Updated");
+    saved.setAge(31);
+    saved.setSalary(new BigDecimal("80000"));
+    saved.setDepartments(Set.of(engineering));
+
+    when(employeeRepository.findById(1L)).thenReturn(Optional.of(existing));
+    when(departmentRepository.findById(2)).thenReturn(Optional.of(engineering));
+    when(employeeRepository.save(any(Employee.class))).thenReturn(saved);
+
+    EmployeeDto response = employeeService.updateEmployee(1L, update);
+
+    assertThat(response.getEmpName()).isEqualTo("Alice Updated");
+    assertThat(response.getDepartmentIds()).containsExactly(2);
+  }
+
+  @Test
+  void updateEmployee_throwsWhenEmployeeNotFound() {
+    when(employeeRepository.findById(99L)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> employeeService.updateEmployee(99L,
+        new EmployeeDto(null, "X", List.of(1), 20, new BigDecimal("1"))))
+        .isInstanceOf(ResourceNotFoundException.class);
+  }
+
+  @Test
+  void createEmployee_throwsWhenDepartmentMissing() {
+    when(departmentRepository.findById(99)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> employeeService.createEmployee(
+        new EmployeeDto(null, "Alice", List.of(99), 30, new BigDecimal("75000"))))
+        .isInstanceOf(ResourceNotFoundException.class)
+        .hasMessageContaining("99");
+  }
+
+  @Test
+  void deleteEmployee_throwsWhenNotFound() {
+    when(employeeRepository.findById(99L)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> employeeService.deleteEmployee(99L))
+        .isInstanceOf(ResourceNotFoundException.class);
+  }
 }

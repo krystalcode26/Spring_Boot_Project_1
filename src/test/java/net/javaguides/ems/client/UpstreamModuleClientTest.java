@@ -26,12 +26,25 @@ class UpstreamModuleClientTest {
   void setUp() {
     upstreamModuleClient = new UpstreamModuleClient(restClient);
     ReflectionTestUtils.setField(upstreamModuleClient, "enabled", false);
+    ReflectionTestUtils.setField(upstreamModuleClient, "upstreamUrl", "http://upstream");
+    ReflectionTestUtils.setField(upstreamModuleClient, "upstreamPath", "/name/notify");
   }
 
   @Test
   void notifyAsync_skipsCallWhenDisabled() throws Exception {
     CompletableFuture<Void> future = upstreamModuleClient.notifyAsync(
         new NameAggregationRequest(List.of("Alice")));
+
+    assertThat(future.get()).isNull();
+  }
+
+  @Test
+  void notifyAsync_callsUpstreamWhenEnabled() throws Exception {
+    ReflectionTestUtils.setField(upstreamModuleClient, "enabled", true);
+    net.javaguides.ems.testutil.RestClientTestSupport.stubPostBodiless(restClient);
+
+    CompletableFuture<Void> future = upstreamModuleClient.notifyAsync(
+        new NameAggregationRequest(List.of("Alice", "Bob")));
 
     assertThat(future.get()).isNull();
   }
