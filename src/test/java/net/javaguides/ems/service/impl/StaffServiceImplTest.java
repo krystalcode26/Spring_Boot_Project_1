@@ -78,4 +78,35 @@ class StaffServiceImplTest {
 
     verify(staffRepository).deleteById(1L);
   }
+
+  @Test
+  void updateStaff_updatesAndReturnsDto() {
+    Staff existing = new Staff(1L, "Jane", "Doe", "jane@example.com");
+    StaffDto update = new StaffDto(null, "Jane", "Smith", "jane.smith@example.com");
+    Staff saved = new Staff(1L, "Jane", "Smith", "jane.smith@example.com");
+    when(staffRepository.findById(1L)).thenReturn(Optional.of(existing));
+    when(staffRepository.save(any(Staff.class))).thenReturn(saved);
+
+    StaffDto response = staffService.updateStaff(1L, update);
+
+    assertThat(response.getLastName()).isEqualTo("Smith");
+    assertThat(response.getEmail()).isEqualTo("jane.smith@example.com");
+  }
+
+  @Test
+  void updateStaff_throwsWhenNotFound() {
+    when(staffRepository.findById(99L)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> staffService.updateStaff(99L,
+        new StaffDto(null, "A", "B", "a@b.com")))
+        .isInstanceOf(ResourceNotFoundException.class);
+  }
+
+  @Test
+  void deleteStaff_throwsWhenNotFound() {
+    when(staffRepository.findById(99L)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> staffService.deleteStaff(99L))
+        .isInstanceOf(ResourceNotFoundException.class);
+  }
 }

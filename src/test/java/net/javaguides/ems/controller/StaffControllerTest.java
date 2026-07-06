@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -76,5 +77,19 @@ class StaffControllerTest {
         .andExpect(jsonPath("$").value("Staff deleted successfully"));
 
     verify(staffService).deleteStaff(1L);
+  }
+
+  @Test
+  void updateStaff_returns200() throws Exception {
+    when(staffService.updateStaff(any(), any()))
+        .thenReturn(new StaffDto(1L, "Jane", "Smith", "jane.smith@example.com"));
+
+    mockMvc.perform(put("/api/staffs/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("""
+                {"firstName":"Jane","lastName":"Smith","email":"jane.smith@example.com"}
+                """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.lastName").value("Smith"));
   }
 }

@@ -7,7 +7,8 @@
 # 3. Jenkins -> Credentials -> Secret text ID: sonar-token
 # 4. Jenkins -> Manage Jenkins -> System -> SonarQube servers:
 #      Name: sonarqube, URL: http://sonarqube:9000, Token: sonar-token
-# 5. SonarQube -> Administration -> Webhooks -> http://jenkins:8080/sonarqube-webhook/
+# 5. (Optional) SonarQube -> Administration -> Webhooks -> http://jenkins:8080/sonarqube-webhook/
+#    Only needed if Jenkinsfile uses waitForQualityGate; Maven -Dsonar.qualitygate.wait=true does not need it.
 # 6. SonarQube -> General Settings -> Server base URL: http://localhost:9000
 # 7. Jenkins build: check SONAR_ENABLED when running pipeline
 services:

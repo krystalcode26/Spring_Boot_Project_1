@@ -63,18 +63,8 @@ pipeline {
             }
             steps {
                 withSonarQubeEnv('sonarqube') {
-                    sh './mvnw sonar:sonar -B'
-                }
-            }
-        }
-
-        stage('Quality Gate') {
-            when {
-                expression { params.SONAR_ENABLED == true }
-            }
-            steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                    // Reuse JaCoCo from Test stage; Maven polls Sonar for QG (no Jenkins webhook needed)
+                    sh './mvnw sonar:sonar -DskipTests -Dsonar.qualitygate.wait=true -B'
                 }
             }
         }

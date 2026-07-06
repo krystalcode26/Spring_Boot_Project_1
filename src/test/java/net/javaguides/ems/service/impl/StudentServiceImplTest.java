@@ -86,4 +86,35 @@ class StudentServiceImplTest {
 
     verify(studentRepository).deleteById(1L);
   }
+
+  @Test
+  void updateStudent_updatesAndReturnsDto() {
+    Student existing = new Student(1L, "Alice", "Smith", "alice@example.com");
+    StudentDto update = new StudentDto(null, "Alice", "Jones", "alice.jones@example.com");
+    Student saved = new Student(1L, "Alice", "Jones", "alice.jones@example.com");
+    when(studentRepository.findById(1L)).thenReturn(Optional.of(existing));
+    when(studentRepository.save(any(Student.class))).thenReturn(saved);
+
+    StudentDto response = studentService.updateStudent(1L, update);
+
+    assertThat(response.getLastName()).isEqualTo("Jones");
+    assertThat(response.getEmail()).isEqualTo("alice.jones@example.com");
+  }
+
+  @Test
+  void updateStudent_throwsWhenNotFound() {
+    when(studentRepository.findById(99L)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> studentService.updateStudent(99L,
+        new StudentDto(null, "A", "B", "a@b.com")))
+        .isInstanceOf(ResourceNotFoundException.class);
+  }
+
+  @Test
+  void deleteStudent_throwsWhenNotFound() {
+    when(studentRepository.findById(99L)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> studentService.deleteStudent(99L))
+        .isInstanceOf(ResourceNotFoundException.class);
+  }
 }
