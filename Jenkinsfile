@@ -67,6 +67,12 @@ pipeline {
                     sh './mvnw sonar:sonar -DskipTests -Dsonar.qualitygate.wait=true -B'
                 }
             }
+            post {
+                failure {
+                    echo 'SonarQube Quality Gate failed. Open http://localhost:9000/dashboard?id=ems-backend → Quality Gate tab for the exact condition.'
+                    echo 'Common fixes: review Security Hotspots in Sonar UI, or confirm coverage exclusions in pom.xml.'
+                }
+            }
         }
 
         stage('Package') {

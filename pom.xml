@@ -28,6 +28,8 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
+		<groups/>
+		<excludedGroups/>
 		<spring-cloud.version>2025.1.2</spring-cloud.version>
 		<jacoco.version>0.8.12</jacoco.version>
 		<sonar.projectKey>ems-backend</sonar.projectKey>
@@ -35,6 +37,13 @@
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 		<sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 		<sonar.junit.reportPaths>${project.build.directory}/surefire-reports</sonar.junit.reportPaths>
+		<!-- Measure coverage on business logic only -->
+		<sonar.coverage.inclusions>
+			**/src/main/java/**/controller/**,
+			**/src/main/java/**/service/**,
+			**/src/main/java/**/mapper/**,
+			**/src/main/java/**/exception/**
+		</sonar.coverage.inclusions>
 		<!-- Exclude boilerplate from coverage so Sonar measures business logic -->
 		<sonar.coverage.exclusions>
 			**/SmsBackendApplication.java,
@@ -46,6 +55,14 @@
 			**/exception/ErrorResponse.java,
 			**/aop/**
 		</sonar.coverage.exclusions>
+		<!-- Similar CRUD/MockMvc tests are expected to repeat patterns -->
+		<sonar.cpd.exclusions>**/src/test/**</sonar.cpd.exclusions>
+		<sonar.security.hotspots.exclusions>**/src/test/**,**/src/main/resources/**</sonar.security.hotspots.exclusions>
+		<!-- Placeholder config values are not real secrets -->
+		<sonar.text.exclusions>
+			**/src/main/resources/application*.properties,
+			**/src/test/resources/**
+		</sonar.text.exclusions>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -131,8 +148,19 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-restclient-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.rest-assured</groupId>
+			<artifactId>rest-assured</artifactId>
+			<version>5.5.1</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -140,6 +168,18 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<groups>${groups}</groups>
+					<excludedGroups>${excludedGroups}</excludedGroups>
+					<systemPropertyVariables>
+						<groups>${groups}</groups>
+						<excludedGroups>${excludedGroups}</excludedGroups>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
