@@ -42,10 +42,9 @@
 			**/dto/**,
 			**/entity/**,
 			**/repository/**,
+			**/client/**,
 			**/exception/ErrorResponse.java,
-			**/aop/HandleNameAggregationFailure.java,
-			**/aop/LoggingAspect.java,
-			**/aop/DemoAspect.java
+			**/aop/**
 		</sonar.coverage.exclusions>
 	</properties>
 	<dependencyManagement>

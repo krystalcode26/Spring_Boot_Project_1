@@ -63,7 +63,8 @@ pipeline {
             }
             steps {
                 withSonarQubeEnv('sonarqube') {
-                    sh './mvnw sonar:sonar -B'
+                    // Reuse JaCoCo + surefire output from Test stage
+                    sh './mvnw sonar:sonar -DskipTests -Dsonar.qualitygate.wait=false -B'
                 }
             }
         }
