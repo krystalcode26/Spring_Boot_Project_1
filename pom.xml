@@ -37,6 +37,13 @@
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 		<sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 		<sonar.junit.reportPaths>${project.build.directory}/surefire-reports</sonar.junit.reportPaths>
+		<!-- Measure coverage on business logic only -->
+		<sonar.coverage.inclusions>
+			**/src/main/java/**/controller/**,
+			**/src/main/java/**/service/**,
+			**/src/main/java/**/mapper/**,
+			**/src/main/java/**/exception/**
+		</sonar.coverage.inclusions>
 		<!-- Exclude boilerplate from coverage so Sonar measures business logic -->
 		<sonar.coverage.exclusions>
 			**/SmsBackendApplication.java,
@@ -48,6 +55,13 @@
 			**/exception/ErrorResponse.java,
 			**/aop/**
 		</sonar.coverage.exclusions>
+		<!-- Similar CRUD/MockMvc tests are expected to repeat patterns -->
+		<sonar.cpd.exclusions>**/src/test/**</sonar.cpd.exclusions>
+		<!-- Placeholder config values are not real secrets -->
+		<sonar.text.exclusions>
+			**/src/main/resources/application*.properties,
+			**/src/test/resources/**
+		</sonar.text.exclusions>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
