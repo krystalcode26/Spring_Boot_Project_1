@@ -19,7 +19,11 @@ class StudentNotificationServiceTest {
   }
 
   @Test
-  void sendWelcomeNotification_completesSuccessfully() {
-    service.sendWelcomeNotification("student@example.com");
+  void sendWelcomeNotification_completesSuccessfully() throws InterruptedException {
+    Thread worker = new Thread(() -> service.sendWelcomeNotification("student@example.com"));
+    worker.start();
+    worker.join(5_000);
+
+    assertThat(worker.isAlive()).isFalse();
   }
 }

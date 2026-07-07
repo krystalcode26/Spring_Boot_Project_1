@@ -96,9 +96,9 @@ class StaffServiceImplTest {
   @Test
   void updateStaff_throwsWhenNotFound() {
     when(staffRepository.findById(99L)).thenReturn(Optional.empty());
+    StaffDto update = new StaffDto(null, "A", "B", "a@b.com");
 
-    assertThatThrownBy(() -> staffService.updateStaff(99L,
-        new StaffDto(null, "A", "B", "a@b.com")))
+    assertThatThrownBy(() -> staffService.updateStaff(99L, update))
         .isInstanceOf(ResourceNotFoundException.class);
   }
 
