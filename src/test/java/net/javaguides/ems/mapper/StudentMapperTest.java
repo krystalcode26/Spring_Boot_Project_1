@@ -10,7 +10,7 @@ class StudentMapperTest {
 
   @Test
   void mapToStudentDto_mapsAllFields() {
-    Student student = new Student(1L, "Alice", "Smith", "alice@example.com");
+    Student student = new Student(1L, "Alice", "Smith", "alice@example.com", null, null);
 
     StudentDto dto = StudentMapper.mapToStudentDto(student);
 

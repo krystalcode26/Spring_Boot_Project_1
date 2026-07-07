@@ -36,6 +36,16 @@ public class EmployeeRepository {
   }
 
   @Transactional(readOnly = true)
+  public Optional<Employee> findByEmail(String email) {
+    List<Employee> results = entityManager.createQuery(
+            "SELECT e FROM Employee e LEFT JOIN FETCH e.departments WHERE e.email = :email",
+            Employee.class)
+        .setParameter("email", email)
+        .getResultList();
+    return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+  }
+
+  @Transactional(readOnly = true)
   public List<Employee> findAll() {
     return entityManager.createQuery(
             "SELECT DISTINCT e FROM Employee e LEFT JOIN FETCH e.departments ORDER BY e.empId",

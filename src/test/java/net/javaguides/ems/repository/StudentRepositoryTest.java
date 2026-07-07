@@ -21,7 +21,7 @@ class StudentRepositoryTest {
 
   @Test
   void findById_returnsStudent_whenExists() {
-    Student saved = studentRepository.save(new Student(null, "Jane", "Smith", "jane@repo.com"));
+    Student saved = studentRepository.save(new Student(null, "Jane", "Smith", "jane@repo.com", null, null));
 
     Optional<Student> found = studentRepository.findById(saved.getId());
 
@@ -31,10 +31,10 @@ class StudentRepositoryTest {
 
   @Test
   void save_throwsDataIntegrityViolation_onDuplicateEmail() {
-    studentRepository.saveAndFlush(new Student(null, "John", "Doe", "dup@repo.com"));
+    studentRepository.saveAndFlush(new Student(null, "John", "Doe", "dup@repo.com", null, null));
 
     assertThatThrownBy(() -> studentRepository.saveAndFlush(
-            new Student(null, "Jane", "Smith", "dup@repo.com")))
+            new Student(null, "Jane", "Smith", "dup@repo.com", null, null)))
         .isInstanceOf(DataIntegrityViolationException.class);
   }
 }
