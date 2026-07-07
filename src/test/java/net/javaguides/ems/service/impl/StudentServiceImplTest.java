@@ -37,7 +37,7 @@ class StudentServiceImplTest {
   @Test
   void createStudent_savesAndReturnsDto() {
     StudentDto request = new StudentDto(null, "Alice", "Smith", "alice@example.com");
-    Student saved = new Student(1L, "Alice", "Smith", "alice@example.com");
+    Student saved = new Student(1L, "Alice", "Smith", "alice@example.com", null, null);
     when(studentRepository.save(any(Student.class))).thenReturn(saved);
 
     StudentDto response = studentService.createStudent(request);
@@ -49,7 +49,7 @@ class StudentServiceImplTest {
 
   @Test
   void getStudentById_returnsDtoWhenFound() {
-    Student student = new Student(1L, "Alice", "Smith", "alice@example.com");
+    Student student = new Student(1L, "Alice", "Smith", "alice@example.com", null, null);
     when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
 
     StudentDto dto = studentService.getStudentById(1L);
@@ -69,7 +69,7 @@ class StudentServiceImplTest {
   @Test
   void getAllStudents_returnsMappedList() {
     when(studentRepository.findAll()).thenReturn(List.of(
-        new Student(1L, "Alice", "Smith", "alice@example.com")));
+        new Student(1L, "Alice", "Smith", "alice@example.com", null, null)));
 
     List<StudentDto> students = studentService.getAllStudents();
 
@@ -80,7 +80,7 @@ class StudentServiceImplTest {
   @Test
   void deleteStudent_deletesWhenFound() {
     when(studentRepository.findById(1L)).thenReturn(Optional.of(
-        new Student(1L, "Alice", "Smith", "alice@example.com")));
+        new Student(1L, "Alice", "Smith", "alice@example.com", null, null)));
 
     studentService.deleteStudent(1L);
 
@@ -89,9 +89,9 @@ class StudentServiceImplTest {
 
   @Test
   void updateStudent_updatesAndReturnsDto() {
-    Student existing = new Student(1L, "Alice", "Smith", "alice@example.com");
+    Student existing = new Student(1L, "Alice", "Smith", "alice@example.com", null, null);
     StudentDto update = new StudentDto(null, "Alice", "Jones", "alice.jones@example.com");
-    Student saved = new Student(1L, "Alice", "Jones", "alice.jones@example.com");
+    Student saved = new Student(1L, "Alice", "Jones", "alice.jones@example.com", null, null);
     when(studentRepository.findById(1L)).thenReturn(Optional.of(existing));
     when(studentRepository.save(any(Student.class))).thenReturn(saved);
 

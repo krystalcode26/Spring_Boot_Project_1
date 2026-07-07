@@ -1,6 +1,11 @@
 package net.javaguides.ems.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,13 +13,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-
-//is a Lombok annotation that generates a constructor with no arguments. 
-// It is commonly used with JPA entities because Hibernate requires a default constructor to instantiate objects through reflection.
 @NoArgsConstructor
-
-//Lombok annotation that automatically generates a constructor containing all fields of the class.
-
 @AllArgsConstructor
 @Entity
 @Table(name = "students")
@@ -32,4 +31,8 @@ public class Student {
 
   @Column(name = "email", nullable = false, unique = true)
   private String email;
+
+  private String password;
+
+  private String role;
 }

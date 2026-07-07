@@ -150,6 +150,7 @@ pipeline {
     post {
         success {
             echo "Deployed ${DOCKER_IMAGE}:${DOCKER_TAG} to ${RESOLVED_EC2_HOST}"
+            echo 'Ensure EC2 has GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and JWT_SECRET set for secured APIs.'
         }
         failure {
             echo 'Pipeline failed. Check the stage logs above.'

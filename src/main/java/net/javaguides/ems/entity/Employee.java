@@ -40,7 +40,12 @@ public class Employee {
   @Column(name = "salary")
   private BigDecimal salary;
 
-  // owning side — Hibernate manages the join table
+  private String email;
+
+  private String password;
+
+  private String role;
+
   @ManyToMany
   @JoinTable(
       name = "employee_department",
