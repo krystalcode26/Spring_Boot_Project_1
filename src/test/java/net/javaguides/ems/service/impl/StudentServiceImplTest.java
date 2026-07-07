@@ -104,9 +104,9 @@ class StudentServiceImplTest {
   @Test
   void updateStudent_throwsWhenNotFound() {
     when(studentRepository.findById(99L)).thenReturn(Optional.empty());
+    StudentDto update = new StudentDto(null, "A", "B", "a@b.com");
 
-    assertThatThrownBy(() -> studentService.updateStudent(99L,
-        new StudentDto(null, "A", "B", "a@b.com")))
+    assertThatThrownBy(() -> studentService.updateStudent(99L, update))
         .isInstanceOf(ResourceNotFoundException.class);
   }
 

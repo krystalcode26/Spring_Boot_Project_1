@@ -32,9 +32,9 @@ class StudentRepositoryTest {
   @Test
   void save_throwsDataIntegrityViolation_onDuplicateEmail() {
     studentRepository.saveAndFlush(new Student(null, "John", "Doe", "dup@repo.com"));
+    Student duplicate = new Student(null, "Jane", "Smith", "dup@repo.com");
 
-    assertThatThrownBy(() -> studentRepository.saveAndFlush(
-            new Student(null, "Jane", "Smith", "dup@repo.com")))
+    assertThatThrownBy(() -> studentRepository.saveAndFlush(duplicate))
         .isInstanceOf(DataIntegrityViolationException.class);
   }
 }
