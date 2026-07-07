@@ -139,18 +139,18 @@ class EmployeeServiceImplTest {
   @Test
   void updateEmployee_throwsWhenEmployeeNotFound() {
     when(employeeRepository.findById(99L)).thenReturn(Optional.empty());
+    EmployeeDto update = new EmployeeDto(null, "X", List.of(1), 20, new BigDecimal("1"));
 
-    assertThatThrownBy(() -> employeeService.updateEmployee(99L,
-        new EmployeeDto(null, "X", List.of(1), 20, new BigDecimal("1"))))
+    assertThatThrownBy(() -> employeeService.updateEmployee(99L, update))
         .isInstanceOf(ResourceNotFoundException.class);
   }
 
   @Test
   void createEmployee_throwsWhenDepartmentMissing() {
     when(departmentRepository.findById(99)).thenReturn(Optional.empty());
+    EmployeeDto request = new EmployeeDto(null, "Alice", List.of(99), 30, new BigDecimal("75000"));
 
-    assertThatThrownBy(() -> employeeService.createEmployee(
-        new EmployeeDto(null, "Alice", List.of(99), 30, new BigDecimal("75000"))))
+    assertThatThrownBy(() -> employeeService.createEmployee(request))
         .isInstanceOf(ResourceNotFoundException.class)
         .hasMessageContaining("99");
   }

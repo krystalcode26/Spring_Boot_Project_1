@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -109,10 +108,10 @@ class FailedIntegrationRecoveryServiceTest {
 
   @Test
   void replayPendingDownstreamRequests_recoversSuccessfulRequest() {
-    FailedIntegrationRequest record = pendingRecord("Alice, Bob");
+    FailedIntegrationRequest pendingRequest = pendingRecord("Alice, Bob");
     when(repository.findByStatusAndIntegrationType(
-        eq(FailedIntegrationRequest.STATUS_PENDING),
-        eq(FailedIntegrationRequest.TYPE_DOWNSTREAM))).thenReturn(List.of(record));
+        FailedIntegrationRequest.STATUS_PENDING,
+        FailedIntegrationRequest.TYPE_DOWNSTREAM)).thenReturn(List.of(pendingRequest));
     RestClientTestSupport.stubPostBody(restClient, new NameAggregationResponse(List.of("Alice", "Bob"), null));
 
     recoveryService.replayPendingDownstreamRequests();
@@ -127,10 +126,10 @@ class FailedIntegrationRecoveryServiceTest {
 
   @Test
   void replayPendingDownstreamRequests_retriesOnFailure() {
-    FailedIntegrationRequest record = pendingRecord("Alice");
+    FailedIntegrationRequest pendingRequest = pendingRecord("Alice");
     when(repository.findByStatusAndIntegrationType(
-        eq(FailedIntegrationRequest.STATUS_PENDING),
-        eq(FailedIntegrationRequest.TYPE_DOWNSTREAM))).thenReturn(List.of(record));
+        FailedIntegrationRequest.STATUS_PENDING,
+        FailedIntegrationRequest.TYPE_DOWNSTREAM)).thenReturn(List.of(pendingRequest));
     RestClientTestSupport.stubPostFailure(restClient, new RuntimeException("connection refused"));
 
     recoveryService.replayPendingDownstreamRequests();
@@ -145,11 +144,11 @@ class FailedIntegrationRecoveryServiceTest {
 
   @Test
   void replayPendingDownstreamRequests_abandonsAfterMaxAttempts() {
-    FailedIntegrationRequest record = pendingRecord("Alice");
-    record.setAttemptCount(1);
+    FailedIntegrationRequest pendingRequest = pendingRecord("Alice");
+    pendingRequest.setAttemptCount(1);
     when(repository.findByStatusAndIntegrationType(
-        eq(FailedIntegrationRequest.STATUS_PENDING),
-        eq(FailedIntegrationRequest.TYPE_DOWNSTREAM))).thenReturn(List.of(record));
+        FailedIntegrationRequest.STATUS_PENDING,
+        FailedIntegrationRequest.TYPE_DOWNSTREAM)).thenReturn(List.of(pendingRequest));
     RestClientTestSupport.stubPostFailure(restClient, new RuntimeException("still down"));
 
     recoveryService.replayPendingDownstreamRequests();
@@ -162,12 +161,12 @@ class FailedIntegrationRecoveryServiceTest {
   }
 
   private static FailedIntegrationRequest pendingRecord(String payload) {
-    FailedIntegrationRequest record = new FailedIntegrationRequest();
-    record.setId(1L);
-    record.setIntegrationType(FailedIntegrationRequest.TYPE_DOWNSTREAM);
-    record.setPayloadJson(payload);
-    record.setStatus(FailedIntegrationRequest.STATUS_PENDING);
-    record.setAttemptCount(0);
-    return record;
+    FailedIntegrationRequest pendingRequest = new FailedIntegrationRequest();
+    pendingRequest.setId(1L);
+    pendingRequest.setIntegrationType(FailedIntegrationRequest.TYPE_DOWNSTREAM);
+    pendingRequest.setPayloadJson(payload);
+    pendingRequest.setStatus(FailedIntegrationRequest.STATUS_PENDING);
+    pendingRequest.setAttemptCount(0);
+    return pendingRequest;
   }
 }
