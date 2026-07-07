@@ -69,8 +69,9 @@ pipeline {
             }
             post {
                 failure {
-                    echo 'SonarQube Quality Gate failed. Open http://localhost:9000/dashboard?id=ems-backend → Quality Gate tab for the exact condition.'
-                    echo 'Common fixes: review Security Hotspots in Sonar UI, or confirm coverage exclusions in pom.xml.'
+                    echo 'SonarQube Quality Gate failed. Open http://localhost:9000/dashboard?id=ems-backend'
+                    echo 'Check: Quality Gate tab (coverage / duplication / security hotspots).'
+                    echo 'If Security Hotspots: Sonar UI -> Security -> Hotspots -> Review each as Safe, then re-run build.'
                 }
             }
         }

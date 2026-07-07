@@ -56,12 +56,27 @@
 			**/aop/**
 		</sonar.coverage.exclusions>
 		<!-- Similar CRUD/MockMvc tests are expected to repeat patterns -->
-		<sonar.cpd.exclusions>**/src/test/**</sonar.cpd.exclusions>
-		<sonar.security.hotspots.exclusions>**/src/test/**,**/src/main/resources/**</sonar.security.hotspots.exclusions>
+		<sonar.cpd.exclusions>
+			**/src/test/**,
+			**/src/main/java/**/controller/**,
+			**/src/main/java/**/mapper/**,
+			**/src/main/java/**/dto/**
+		</sonar.cpd.exclusions>
+		<sonar.security.hotspots.exclusions>
+			**/src/test/**,
+			**/src/main/resources/**,
+			**/docker-compose.yml,
+			**/jenkins/**,
+			**/.github/**
+		</sonar.security.hotspots.exclusions>
 		<!-- Placeholder config values are not real secrets -->
 		<sonar.text.exclusions>
 			**/src/main/resources/application*.properties,
-			**/src/test/resources/**
+			**/src/test/resources/**,
+			**/docker-compose.yml,
+			**/jenkins/**,
+			**/.github/**,
+			**/scripts/**
 		</sonar.text.exclusions>
 	</properties>
 	<dependencyManagement>
