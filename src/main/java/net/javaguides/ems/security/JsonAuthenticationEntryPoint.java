@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 @Component
 public class JsonAuthenticationEntryPoint implements AuthenticationEntryPoint {
@@ -24,6 +25,7 @@ public class JsonAuthenticationEntryPoint implements AuthenticationEntryPoint {
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.getWriter().write(
         "{\"status\":401,\"message\":\"Authentication required. Sign in via /oauth2/authorization/google and use the Bearer token.\",\"timestamp\":\""
-            + LocalDateTime.now() + "\",\"errors\":null}");
+            + DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(
+                java.time.OffsetDateTime.now(ZoneOffset.UTC)) + "\",\"errors\":null}");
   }
 }

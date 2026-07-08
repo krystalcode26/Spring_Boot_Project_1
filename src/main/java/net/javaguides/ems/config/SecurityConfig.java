@@ -26,6 +26,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @ConditionalOnProperty(name = "security.enabled", havingValue = "true", matchIfMissing = true)
 public class SecurityConfig {
 
+  private static final String API_PATTERN = "/api/**";
+  private static final String ROLE_ADMIN = "ADMIN";
+  private static final String ROLE_USER = "USER";
+
   private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
   private final JsonAuthenticationEntryPoint authenticationEntryPoint;
   private final JsonAccessDeniedHandler accessDeniedHandler;
@@ -42,12 +46,12 @@ public class SecurityConfig {
             .requestMatchers("/name/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/log/**").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("USER", "ADMIN")
-            .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
-            .requestMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
-            .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
-            .requestMatchers(HttpMethod.PATCH, "/api/**").hasRole("ADMIN")
-            .requestMatchers("/api/**").authenticated()
+            .requestMatchers(HttpMethod.GET, API_PATTERN).hasAnyRole(ROLE_USER, ROLE_ADMIN)
+            .requestMatchers(HttpMethod.POST, API_PATTERN).hasRole(ROLE_ADMIN)
+            .requestMatchers(HttpMethod.PUT, API_PATTERN).hasRole(ROLE_ADMIN)
+            .requestMatchers(HttpMethod.DELETE, API_PATTERN).hasRole(ROLE_ADMIN)
+            .requestMatchers(HttpMethod.PATCH, API_PATTERN).hasRole(ROLE_ADMIN)
+            .requestMatchers(API_PATTERN).authenticated()
             .anyRequest().authenticated())
         .oauth2Login(oauth -> oauth.successHandler(oAuth2LoginSuccessHandler))
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
