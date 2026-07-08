@@ -61,6 +61,6 @@ public class KafkaValidationService {
         publishedEventIds.size(),
         consumed.size(),
         publishedEventIds,
-        consumed.stream().map(consumedMessage -> consumedMessage.message()).toList());
+        consumed.stream().map(KafkaMessageRegistry.ConsumedMessage::message).toList());
   }
 }
