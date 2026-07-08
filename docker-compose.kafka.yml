@@ -79,11 +79,11 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
-    entrypoint: ["/bin/bash", "-ec"]
-    command: >
-      /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --topic employee-events --partitions 3 --replication-factor 3 --bootstrap-server kafka-1:19092 &&
-      /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --topic employee-events.DLT --partitions 3 --replication-factor 3 --bootstrap-server kafka-1:19092 &&
-      /opt/kafka/bin/kafka-topics.sh --describe --topic employee-events --bootstrap-server kafka-1:19092
+    volumes:
+      - ./scripts/kafka-init-topics.sh:/kafka-init-topics.sh:ro
+    entrypoint: ["/bin/bash", "/kafka-init-topics.sh"]
+    environment:
+      KAFKA_BOOTSTRAP_SERVER: kafka-1:19092
     restart: "no"
 
   kafka-ui:
