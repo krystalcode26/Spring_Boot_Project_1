@@ -41,6 +41,7 @@ class KafkaIntegrationTest {
         .expectStatus().isOk()
         .expectBody(KafkaValidationResponse.class)
         .value(response -> {
+          assertThat(response).isNotNull();
           assertThat(response.success()).isTrue();
           assertThat(response.publishedCount()).isEqualTo(3);
           assertThat(response.consumedCount()).isEqualTo(3);

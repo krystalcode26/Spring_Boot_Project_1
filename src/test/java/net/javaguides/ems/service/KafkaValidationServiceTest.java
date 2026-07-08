@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,7 +39,7 @@ class KafkaValidationServiceTest {
     when(employeeEventProducer.publish(any())).thenAnswer(invocation -> {
       EmployeeEventMessage message = invocation.getArgument(0);
       messageRegistry.register(0, 0L, message);
-      return CompletableFuture.completedFuture(new SendResult<>(null, null));
+      return CompletableFuture.completedFuture(mock(SendResult.class));
     });
 
     var response = kafkaValidationService.validateProduceAndConsume();

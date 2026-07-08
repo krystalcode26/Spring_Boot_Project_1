@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.locks.LockSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -47,12 +48,10 @@ public class KafkaValidationService {
       if (publishedEventIds.stream().allMatch(messageRegistry::containsEventId)) {
         break;
       }
-      try {
-        Thread.sleep(POLL_INTERVAL_MS);
-      } catch (InterruptedException ex) {
-        Thread.currentThread().interrupt();
+      if (Thread.currentThread().isInterrupted()) {
         break;
       }
+      LockSupport.parkNanos(POLL_INTERVAL_MS * 1_000_000L);
     }
 
     List<KafkaMessageRegistry.ConsumedMessage> consumed = messageRegistry.getMessages();
@@ -62,6 +61,6 @@ public class KafkaValidationService {
         publishedEventIds.size(),
         consumed.size(),
         publishedEventIds,
-        consumed.stream().map(KafkaMessageRegistry.ConsumedMessage::message).toList());
+        consumed.stream().map(consumedMessage -> consumedMessage.message()).toList());
   }
 }
