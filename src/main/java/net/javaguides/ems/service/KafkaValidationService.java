@@ -2,8 +2,9 @@ package net.javaguides.ems.service;
 
 import lombok.RequiredArgsConstructor;
 import net.javaguides.ems.dto.KafkaValidationResponse;
-import net.javaguides.ems.kafka.StudentEventMessage;
-import net.javaguides.ems.kafka.StudentEventProducer;
+import net.javaguides.ems.kafka.EmployeeEventMessage;
+import net.javaguides.ems.kafka.EmployeeEventProducer;
+import net.javaguides.ems.kafka.EmployeeEventType;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,7 @@ public class KafkaValidationService {
   private static final long POLL_INTERVAL_MS = 200L;
   private static final long TIMEOUT_MS = 15_000L;
 
-  private final StudentEventProducer studentEventProducer;
+  private final EmployeeEventProducer employeeEventProducer;
   private final KafkaMessageRegistry messageRegistry;
 
   public KafkaValidationResponse validateProduceAndConsume() {
@@ -31,15 +32,14 @@ public class KafkaValidationService {
     for (int index = 0; index < VALIDATION_MESSAGE_COUNT; index++) {
       String eventId = UUID.randomUUID().toString();
       publishedEventIds.add(eventId);
-      StudentEventMessage message = new StudentEventMessage(
+      EmployeeEventMessage message = new EmployeeEventMessage(
           eventId,
-          "VALIDATION",
-          (long) index + 1,
+          EmployeeEventType.VALIDATION,
+          10_000L + index,
+          "Kafka Test " + index,
           "kafka-test-" + index + "@ems.com",
-          "Kafka",
-          "Test-" + index,
           Instant.now());
-      studentEventProducer.publish(message).join();
+      employeeEventProducer.publish(message).join();
     }
 
     long deadline = System.currentTimeMillis() + TIMEOUT_MS;

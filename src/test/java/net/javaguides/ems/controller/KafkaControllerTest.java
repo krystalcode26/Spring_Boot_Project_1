@@ -1,8 +1,9 @@
 package net.javaguides.ems.controller;
 
 import net.javaguides.ems.dto.KafkaValidationResponse;
-import net.javaguides.ems.kafka.StudentEventMessage;
-import net.javaguides.ems.kafka.StudentEventProducer;
+import net.javaguides.ems.kafka.EmployeeEventMessage;
+import net.javaguides.ems.kafka.EmployeeEventProducer;
+import net.javaguides.ems.kafka.EmployeeEventType;
 import net.javaguides.ems.service.KafkaMessageRegistry;
 import net.javaguides.ems.service.KafkaValidationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class KafkaControllerTest {
 
   @Mock
-  private StudentEventProducer studentEventProducer;
+  private EmployeeEventProducer employeeEventProducer;
 
   @Mock
   private KafkaMessageRegistry messageRegistry;
@@ -44,12 +45,12 @@ class KafkaControllerTest {
   @BeforeEach
   void setUp() {
     mockMvc = MockMvcBuilders.standaloneSetup(
-        new KafkaController(studentEventProducer, messageRegistry, kafkaValidationService)).build();
+        new KafkaController(employeeEventProducer, messageRegistry, kafkaValidationService)).build();
   }
 
   @Test
   void publish_returnsAccepted() throws Exception {
-    when(studentEventProducer.publish(any())).thenReturn(CompletableFuture.completedFuture(null));
+    when(employeeEventProducer.publish(any())).thenReturn(CompletableFuture.completedFuture(null));
 
     mockMvc.perform(post("/api/kafka/messages")
             .contentType(MediaType.APPLICATION_JSON)
@@ -57,17 +58,16 @@ class KafkaControllerTest {
                 {
                   "eventId":"evt-1",
                   "eventType":"CREATED",
-                  "studentId":1,
+                  "employeeId":1,
+                  "employeeName":"Alice Smith",
                   "email":"alice@example.com",
-                  "firstName":"Alice",
-                  "lastName":"Smith",
                   "occurredAt":"2026-01-01T00:00:00Z"
                 }
                 """))
         .andExpect(status().isAccepted())
         .andExpect(jsonPath("$.eventId").value("evt-1"));
 
-    verify(studentEventProducer).publish(any(StudentEventMessage.class));
+    verify(employeeEventProducer).publish(any(EmployeeEventMessage.class));
   }
 
   @Test
@@ -85,14 +85,14 @@ class KafkaControllerTest {
 
   @Test
   void consumedMessages_returnsRegistryContents() throws Exception {
-    StudentEventMessage message = new StudentEventMessage(
-        UUID.randomUUID().toString(), "TEST", 1L, "a@b.com", "A", "B", Instant.now());
+    EmployeeEventMessage message = new EmployeeEventMessage(
+        UUID.randomUUID().toString(), EmployeeEventType.VALIDATION, 1L, "Alice", "a@b.com", Instant.now());
     when(messageRegistry.getMessages())
         .thenReturn(List.of(new KafkaMessageRegistry.ConsumedMessage(0, 1L, message)));
 
     mockMvc.perform(get("/api/kafka/messages"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].partition").value(0))
-        .andExpect(jsonPath("$[0].message.eventType").value("TEST"));
+        .andExpect(jsonPath("$[0].message.eventType").value("VALIDATION"));
   }
 }

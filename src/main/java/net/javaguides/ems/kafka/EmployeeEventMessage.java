@@ -2,11 +2,10 @@ package net.javaguides.ems.kafka;
 
 import java.time.Instant;
 
-public record StudentEventMessage(
+public record EmployeeEventMessage(
     String eventId,
-    String eventType,
-    Long studentId,
+    EmployeeEventType eventType,
+    Long employeeId,
+    String employeeName,
     String email,
-    String firstName,
-    String lastName,
     Instant occurredAt) {}

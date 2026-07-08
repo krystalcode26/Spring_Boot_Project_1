@@ -5,7 +5,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "kafka")
 public record KafkaProperties(
     boolean enabled,
-    String topicStudentEvents,
+    String topicEmployeeEvents,
+    String topicEmployeeEventsDlt,
     int topicPartitions,
     short topicReplicas,
     String consumerGroupId,

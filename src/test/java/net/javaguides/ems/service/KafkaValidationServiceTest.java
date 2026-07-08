@@ -1,7 +1,8 @@
 package net.javaguides.ems.service;
 
-import net.javaguides.ems.kafka.StudentEventMessage;
-import net.javaguides.ems.kafka.StudentEventProducer;
+import net.javaguides.ems.kafka.EmployeeEventMessage;
+import net.javaguides.ems.kafka.EmployeeEventProducer;
+import net.javaguides.ems.kafka.EmployeeEventType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +22,7 @@ import static org.mockito.Mockito.when;
 class KafkaValidationServiceTest {
 
   @Mock
-  private StudentEventProducer studentEventProducer;
+  private EmployeeEventProducer employeeEventProducer;
 
   private KafkaMessageRegistry messageRegistry;
   private KafkaValidationService kafkaValidationService;
@@ -29,13 +30,13 @@ class KafkaValidationServiceTest {
   @BeforeEach
   void setUp() {
     messageRegistry = new KafkaMessageRegistry();
-    kafkaValidationService = new KafkaValidationService(studentEventProducer, messageRegistry);
+    kafkaValidationService = new KafkaValidationService(employeeEventProducer, messageRegistry);
   }
 
   @Test
   void validateProduceAndConsume_returnsSuccess_whenAllMessagesConsumed() {
-    when(studentEventProducer.publish(any())).thenAnswer(invocation -> {
-      StudentEventMessage message = invocation.getArgument(0);
+    when(employeeEventProducer.publish(any())).thenAnswer(invocation -> {
+      EmployeeEventMessage message = invocation.getArgument(0);
       messageRegistry.register(0, 0L, message);
       return CompletableFuture.completedFuture(new SendResult<>(null, null));
     });
@@ -50,8 +51,8 @@ class KafkaValidationServiceTest {
 
   @Test
   void register_deduplicatesByEventId() {
-    StudentEventMessage message = new StudentEventMessage(
-        UUID.randomUUID().toString(), "TEST", 1L, "a@b.com", "A", "B", Instant.now());
+    EmployeeEventMessage message = new EmployeeEventMessage(
+        UUID.randomUUID().toString(), EmployeeEventType.VALIDATION, 1L, "Alice", "a@b.com", Instant.now());
 
     messageRegistry.register(0, 1L, message);
     messageRegistry.register(1, 2L, message);

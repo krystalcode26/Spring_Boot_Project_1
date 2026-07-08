@@ -11,12 +11,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.util.backoff.FixedBackOff;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,8 +32,16 @@ import java.util.Map;
 public class KafkaConfig {
 
   @Bean
-  NewTopic studentEventsTopic(net.javaguides.ems.config.KafkaProperties kafkaProperties) {
-    return TopicBuilder.name(kafkaProperties.topicStudentEvents())
+  NewTopic employeeEventsTopic(net.javaguides.ems.config.KafkaProperties kafkaProperties) {
+    return TopicBuilder.name(kafkaProperties.topicEmployeeEvents())
+        .partitions(kafkaProperties.topicPartitions())
+        .replicas(kafkaProperties.topicReplicas())
+        .build();
+  }
+
+  @Bean
+  NewTopic employeeEventsDltTopic(net.javaguides.ems.config.KafkaProperties kafkaProperties) {
+    return TopicBuilder.name(kafkaProperties.topicEmployeeEventsDlt())
         .partitions(kafkaProperties.topicPartitions())
         .replicas(kafkaProperties.topicReplicas())
         .build();
@@ -59,13 +71,31 @@ public class KafkaConfig {
   }
 
   @Bean
-  ConcurrentKafkaListenerContainerFactory<String, String> studentEventKafkaListenerContainerFactory(
-      ConsumerFactory<String, String> kafkaConsumerFactory,
+  DefaultErrorHandler kafkaErrorHandler(
+      KafkaTemplate<String, String> kafkaTemplate,
       net.javaguides.ems.config.KafkaProperties kafkaProperties) {
+    DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
+        kafkaTemplate,
+        (record, exception) -> new org.apache.kafka.common.TopicPartition(
+            kafkaProperties.topicEmployeeEventsDlt(),
+            record.partition()));
+
+    DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, new FixedBackOff(1000L, 3L));
+    errorHandler.addNotRetryableExceptions(IllegalArgumentException.class);
+    return errorHandler;
+  }
+
+  @Bean
+  ConcurrentKafkaListenerContainerFactory<String, String> employeeEventKafkaListenerContainerFactory(
+      ConsumerFactory<String, String> kafkaConsumerFactory,
+      net.javaguides.ems.config.KafkaProperties kafkaProperties,
+      DefaultErrorHandler kafkaErrorHandler) {
     ConcurrentKafkaListenerContainerFactory<String, String> factory =
         new ConcurrentKafkaListenerContainerFactory<>();
     factory.setConsumerFactory(kafkaConsumerFactory);
     factory.setConcurrency(kafkaProperties.consumerConcurrency());
+    factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+    factory.setCommonErrorHandler(kafkaErrorHandler);
     return factory;
   }
 }

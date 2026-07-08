@@ -1,6 +1,6 @@
 package net.javaguides.ems.dto;
 
-import net.javaguides.ems.kafka.StudentEventMessage;
+import net.javaguides.ems.kafka.EmployeeEventMessage;
 
 import java.util.List;
 
@@ -9,4 +9,4 @@ public record KafkaValidationResponse(
     int publishedCount,
     int consumedCount,
     List<String> publishedEventIds,
-    List<StudentEventMessage> consumedMessages) {}
+    List<EmployeeEventMessage> consumedMessages) {}

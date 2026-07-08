@@ -13,16 +13,17 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("integration")
-@EmbeddedKafka(partitions = 3, topics = {"student-events"})
+@EmbeddedKafka(partitions = 3, topics = {"employee-events", "employee-events.DLT"})
 @TestPropertySource(properties = {
     "kafka.enabled=true",
-    "kafka.topic-student-events=student-events",
+    "kafka.topic-employee-events=employee-events",
+    "kafka.topic-employee-events-dlt=employee-events.DLT",
     "kafka.topic-partitions=3",
     "kafka.topic-replicas=1",
-    "kafka.consumer-group-id=ems-kafka-integration-test",
+    "kafka.consumer-group-id=notification-service",
     "kafka.consumer-concurrency=3",
     "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
-    "spring.kafka.consumer.group-id=ems-kafka-integration-test",
+    "spring.kafka.consumer.group-id=notification-service",
     "spring.kafka.consumer.auto-offset-reset=earliest"
 })
 @AutoConfigureRestTestClient

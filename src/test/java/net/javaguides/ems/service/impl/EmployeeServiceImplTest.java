@@ -4,6 +4,8 @@ import net.javaguides.ems.dto.EmployeeDto;
 import net.javaguides.ems.entity.Department;
 import net.javaguides.ems.entity.Employee;
 import net.javaguides.ems.exception.ResourceNotFoundException;
+import net.javaguides.ems.kafka.EmployeeEventProducer;
+import net.javaguides.ems.kafka.EmployeeEventType;
 import net.javaguides.ems.repository.DepartmentRepository;
 import net.javaguides.ems.repository.EmployeeRepository;
 import org.junit.jupiter.api.Test;
@@ -11,15 +13,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +36,12 @@ class EmployeeServiceImplTest {
 
   @Mock
   private DepartmentRepository departmentRepository;
+
+  @Mock
+  private ObjectProvider<EmployeeEventProducer> employeeEventProducerProvider;
+
+  @Mock
+  private EmployeeEventProducer employeeEventProducer;
 
   @InjectMocks
   private EmployeeServiceImpl employeeService;
@@ -48,12 +59,16 @@ class EmployeeServiceImplTest {
 
     when(departmentRepository.findById(1)).thenReturn(Optional.of(department));
     when(employeeRepository.save(any(Employee.class))).thenReturn(saved);
+    when(employeeEventProducerProvider.getIfAvailable()).thenReturn(employeeEventProducer);
+    when(employeeEventProducer.publish(eq(EmployeeEventType.CREATED), any(Employee.class)))
+        .thenReturn(CompletableFuture.completedFuture(null));
 
     EmployeeDto response = employeeService.createEmployee(request);
 
     assertThat(response.getEmpId()).isEqualTo(1L);
     assertThat(response.getDepartmentIds()).containsExactly(1);
     verify(departmentRepository).findById(1);
+    verify(employeeEventProducer).publish(eq(EmployeeEventType.CREATED), any(Employee.class));
   }
 
   @Test
@@ -102,10 +117,14 @@ class EmployeeServiceImplTest {
     employee.setEmpName("Alice");
     employee.setDepartments(Set.of());
     when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
+    when(employeeEventProducerProvider.getIfAvailable()).thenReturn(employeeEventProducer);
+    when(employeeEventProducer.publish(eq(EmployeeEventType.DELETED), any(Employee.class)))
+        .thenReturn(CompletableFuture.completedFuture(null));
 
     employeeService.deleteEmployee(1L);
 
     verify(employeeRepository).deleteById(1L);
+    verify(employeeEventProducer).publish(eq(EmployeeEventType.DELETED), any(Employee.class));
   }
 
   @Test
@@ -129,11 +148,15 @@ class EmployeeServiceImplTest {
     when(employeeRepository.findById(1L)).thenReturn(Optional.of(existing));
     when(departmentRepository.findById(2)).thenReturn(Optional.of(engineering));
     when(employeeRepository.save(any(Employee.class))).thenReturn(saved);
+    when(employeeEventProducerProvider.getIfAvailable()).thenReturn(employeeEventProducer);
+    when(employeeEventProducer.publish(eq(EmployeeEventType.UPDATED), any(Employee.class)))
+        .thenReturn(CompletableFuture.completedFuture(null));
 
     EmployeeDto response = employeeService.updateEmployee(1L, update);
 
     assertThat(response.getEmpName()).isEqualTo("Alice Updated");
     assertThat(response.getDepartmentIds()).containsExactly(2);
+    verify(employeeEventProducer).publish(eq(EmployeeEventType.UPDATED), any(Employee.class));
   }
 
   @Test
