@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -53,7 +52,7 @@ public class AuthController {
           String role = authority.getAuthority();
           return role != null ? role.replace("ROLE_", "") : "";
         })
-        .collect(Collectors.toList());
+        .toList();
     return new AuthUserResponse(
         jwt.getSubject(),
         jwt.getClaimAsString("email"),

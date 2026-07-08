@@ -44,7 +44,7 @@ class JwtServiceTest {
 
   @Test
   void secretKey_hashesShortSecretsToValidLength() {
-    assertThat(JwtService.secretKey("short").getEncoded().length).isGreaterThanOrEqualTo(32);
+    assertThat(JwtService.secretKey("short").getEncoded()).hasSizeGreaterThanOrEqualTo(32);
     assertThat(JwtService.secretKey(TEST_SECRET).getAlgorithm()).isEqualTo("HmacSHA256");
   }
 

@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 @Component
 public class JsonAccessDeniedHandler implements AccessDeniedHandler {
@@ -24,6 +25,7 @@ public class JsonAccessDeniedHandler implements AccessDeniedHandler {
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.getWriter().write(
         "{\"status\":403,\"message\":\"Access denied\",\"timestamp\":\""
-            + LocalDateTime.now() + "\",\"errors\":null}");
+            + DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(
+                java.time.OffsetDateTime.now(ZoneOffset.UTC)) + "\",\"errors\":null}");
   }
 }
