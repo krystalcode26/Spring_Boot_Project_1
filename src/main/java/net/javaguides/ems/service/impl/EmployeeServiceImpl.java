@@ -5,12 +5,15 @@ import net.javaguides.ems.dto.EmployeeDto;
 import net.javaguides.ems.entity.Department;
 import net.javaguides.ems.entity.Employee;
 import net.javaguides.ems.exception.ResourceNotFoundException;
+import net.javaguides.ems.kafka.EmployeeEventProducer;
+import net.javaguides.ems.kafka.EmployeeEventType;
 import net.javaguides.ems.mapper.EmployeeMapper;
 import net.javaguides.ems.repository.DepartmentRepository;
 import net.javaguides.ems.repository.EmployeeRepository;
 import net.javaguides.ems.service.EmployeeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -26,6 +29,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
   private final EmployeeRepository employeeRepository;
   private final DepartmentRepository departmentRepository;
+  private final ObjectProvider<EmployeeEventProducer> employeeEventProducerProvider;
 
   @Override
   public EmployeeDto createEmployee(EmployeeDto employeeDto) {
@@ -34,6 +38,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     employee.setEmpId(null);
     employee.setDepartments(resolveDepartments(employeeDto.getDepartmentIds()));
     Employee savedEmployee = employeeRepository.save(employee);
+    publishEvent(EmployeeEventType.CREATED, savedEmployee);
     return EmployeeMapper.mapToEmployeeDto(savedEmployee);
   }
 
@@ -67,16 +72,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     employee.setDepartments(resolveDepartments(updatedEmployee.getDepartmentIds()));
 
     Employee savedEmployee = employeeRepository.save(employee);
+    publishEvent(EmployeeEventType.UPDATED, savedEmployee);
     return EmployeeMapper.mapToEmployeeDto(savedEmployee);
   }
 
   @Override
   public void deleteEmployee(Long empId) {
     log.info("Deleting employee id={}", empId);
-    employeeRepository.findById(empId).orElseThrow(
+    Employee employee = employeeRepository.findById(empId).orElseThrow(
         () -> new ResourceNotFoundException("Employee does not exist with given id: " + empId)
     );
     employeeRepository.deleteById(empId);
+    publishEvent(EmployeeEventType.DELETED, employee);
   }
 
   private Set<Department> resolveDepartments(List<Integer> departmentIds) {
@@ -88,5 +95,17 @@ public class EmployeeServiceImpl implements EmployeeService {
       departments.add(department);
     }
     return departments;
+  }
+
+  private void publishEvent(EmployeeEventType eventType, Employee employee) {
+    EmployeeEventProducer producer = employeeEventProducerProvider.getIfAvailable();
+    if (producer == null) {
+      return;
+    }
+    producer.publish(eventType, employee)
+        .exceptionally(ex -> {
+          log.error("Failed to publish {} event for employee id={}", eventType, employee.getEmpId(), ex);
+          return null;
+        });
   }
 }
