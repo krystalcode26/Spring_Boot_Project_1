@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -47,11 +48,12 @@ class OAuth2LoginSuccessHandlerTest {
         studentRepository,
         authAccountService,
         passwordEncoder);
+    ReflectionTestUtils.setField(handler, "frontendUrl", "http://localhost:4200");
     when(jwtProperties.getExpirationMs()).thenReturn(3_600_000L);
   }
 
   @Test
-  void onAuthenticationSuccess_returnsBearerTokenJson() throws Exception {
+  void onAuthenticationSuccess_redirectsToFrontendCallback() throws Exception {
     OAuth2User oauth2User = new DefaultOAuth2User(
         List.of(new SimpleGrantedAuthority("ROLE_USER")),
         Map.of("email", "user@example.com", "name", "Test User"),
@@ -68,9 +70,9 @@ class OAuth2LoginSuccessHandlerTest {
     MockHttpServletResponse response = new MockHttpServletResponse();
     handler.onAuthenticationSuccess(new MockHttpServletRequest(), response, authentication);
 
-    assertThat(response.getStatus()).isEqualTo(200);
-    assertThat(response.getContentAsString()).contains("\"tokenType\":\"Bearer\"");
-    assertThat(response.getContentAsString()).contains("\"accessToken\"");
-    assertThat(response.getContentAsString()).contains("\"expiresIn\":3600");
+    assertThat(response.getStatus()).isEqualTo(302);
+    assertThat(response.getRedirectedUrl()).startsWith("http://localhost:4200/auth/callback?accessToken=");
+    assertThat(response.getRedirectedUrl()).contains("tokenType=Bearer");
+    assertThat(response.getRedirectedUrl()).contains("expiresIn=3600");
   }
 }

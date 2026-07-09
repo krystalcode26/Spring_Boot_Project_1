@@ -7,8 +7,8 @@ import net.javaguides.ems.dto.TokenResponse;
 import net.javaguides.ems.entity.Student;
 import net.javaguides.ems.repository.StudentRepository;
 import org.jspecify.annotations.NonNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -16,6 +16,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
@@ -29,6 +30,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
   private final StudentRepository studentRepository;
   private final AuthAccountService authAccountService;
   private final PasswordEncoder passwordEncoder;
+
+  @Value("${app.frontend-url:http://localhost:4200}")
+  private String frontendUrl;
 
   @Override
   public void onAuthenticationSuccess(@NonNull HttpServletRequest request,
@@ -67,19 +71,10 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         "Bearer",
         jwtProperties.getExpirationMs() / 1000);
 
-    response.setStatus(HttpServletResponse.SC_OK);
-    response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    response.getWriter().write(toJson(body));
-  }
-
-  private static String toJson(TokenResponse body) {
-    return "{\"accessToken\":\"" + escape(body.getAccessToken())
-        + "\",\"tokenType\":\"" + escape(body.getTokenType())
-        + "\",\"expiresIn\":" + body.getExpiresIn() + "}";
-  }
-
-  private static String escape(String value) {
-    return value.replace("\\", "\\\\").replace("\"", "\\\"");
+    String redirectUrl = frontendUrl + "/auth/callback?accessToken="
+        + URLEncoder.encode(body.getAccessToken(), StandardCharsets.UTF_8)
+        + "&tokenType=" + URLEncoder.encode(body.getTokenType(), StandardCharsets.UTF_8)
+        + "&expiresIn=" + body.getExpiresIn();
+    response.sendRedirect(redirectUrl);
   }
 }
