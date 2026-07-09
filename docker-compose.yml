@@ -185,8 +185,8 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_CLOUD_VAULT_TOKEN: ems-vault-token
       JWT_SECRET: ${JWT_SECRET:-change-me-on-ec2-use-a-long-random-string}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-local-dev-placeholder}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-local-dev-placeholder}
       KAFKA_BOOTSTRAP_SERVERS: kafka-1:19092,kafka-2:19092,kafka-3:19092
     depends_on:
       db:
