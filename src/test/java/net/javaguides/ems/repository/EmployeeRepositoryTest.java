@@ -21,7 +21,9 @@ class EmployeeRepositoryTest {
   @Test
   void findById_returnsEmployee_whenExists() {
     Employee employee = new Employee();
-    employee.setEmpName("Jane");
+    employee.setFirstName("Jane");
+    employee.setLastName("Doe");
+    employee.setEmpName("Jane Doe");
     employee.setAge(30);
     employee.setSalary(new BigDecimal("75000"));
     Employee saved = employeeRepository.save(employee);
@@ -29,13 +31,15 @@ class EmployeeRepositoryTest {
     Optional<Employee> found = employeeRepository.findById(saved.getEmpId());
 
     assertThat(found).isPresent();
-    assertThat(found.get().getEmpName()).isEqualTo("Jane");
+    assertThat(found.get().getFirstName()).isEqualTo("Jane");
   }
 
   @Test
   void save_persistsNewEmployee() {
     Employee employee = new Employee();
-    employee.setEmpName("John");
+    employee.setFirstName("John");
+    employee.setLastName("Doe");
+    employee.setEmpName("John Doe");
     employee.setAge(28);
     employee.setSalary(new BigDecimal("60000"));
 

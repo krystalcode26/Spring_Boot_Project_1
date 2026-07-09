@@ -33,7 +33,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
   @Override
   public EmployeeDto createEmployee(EmployeeDto employeeDto) {
-    log.info("Creating employee with name={}", employeeDto.getEmpName());
+    log.info("Creating employee email={}", employeeDto.getEmail());
     Employee employee = EmployeeMapper.mapToEmployee(employeeDto);
     employee.setEmpId(null);
     employee.setDepartments(resolveDepartments(employeeDto.getDepartmentIds()));
@@ -66,7 +66,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         () -> new ResourceNotFoundException("Employee does not exist with given id: " + empId)
     );
 
-    employee.setEmpName(updatedEmployee.getEmpName());
+    EmployeeMapper.applyNameFields(employee, updatedEmployee.getFirstName(), updatedEmployee.getLastName());
+    employee.setEmail(updatedEmployee.getEmail());
     employee.setAge(updatedEmployee.getAge());
     employee.setSalary(updatedEmployee.getSalary());
     employee.setDepartments(resolveDepartments(updatedEmployee.getDepartmentIds()));

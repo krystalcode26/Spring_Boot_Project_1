@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS students (
 CREATE TABLE IF NOT EXISTS employee (
     empid BIGSERIAL PRIMARY KEY,
     empname VARCHAR(255) NOT NULL,
+    firstname VARCHAR(255),
+    lastname VARCHAR(255),
     age INTEGER,
     salary NUMERIC,
     email VARCHAR(255),
@@ -27,11 +29,27 @@ CREATE TABLE IF NOT EXISTS employee (
 ALTER TABLE students ADD COLUMN IF NOT EXISTS password VARCHAR(255);
 ALTER TABLE students ADD COLUMN IF NOT EXISTS role VARCHAR(50);
 
+ALTER TABLE employee ADD COLUMN IF NOT EXISTS firstname VARCHAR(255);
+ALTER TABLE employee ADD COLUMN IF NOT EXISTS lastname VARCHAR(255);
 ALTER TABLE employee ADD COLUMN IF NOT EXISTS email VARCHAR(255);
 ALTER TABLE employee ADD COLUMN IF NOT EXISTS password VARCHAR(255);
 ALTER TABLE employee ADD COLUMN IF NOT EXISTS role VARCHAR(50);
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_employee_email ON employee (email);
+
+CREATE TABLE IF NOT EXISTS department (
+    deptid SERIAL PRIMARY KEY,
+    deptname VARCHAR(255) NOT NULL
+);
+
+CREATE SEQUENCE IF NOT EXISTS department_deptid_seq;
+SELECT setval(
+    'department_deptid_seq',
+    COALESCE((SELECT MAX(deptid) FROM department), 0) + 1,
+    false
+);
+ALTER TABLE department ALTER COLUMN deptid SET DEFAULT nextval('department_deptid_seq');
+ALTER SEQUENCE department_deptid_seq OWNED BY department.deptid;
 
 -- Many-to-many join table: employee <-> department
 CREATE TABLE IF NOT EXISTS employee_department (

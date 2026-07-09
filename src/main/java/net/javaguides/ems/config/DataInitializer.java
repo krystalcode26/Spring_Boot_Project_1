@@ -38,7 +38,9 @@ public class DataInitializer {
 
       if (employeeRepository.findByEmail(seedProperties.adminEmail()).isEmpty()) {
         Employee employee = new Employee();
-        employee.setEmpName("Admin");
+        employee.setFirstName("System");
+        employee.setLastName("Admin");
+        employee.setEmpName("System Admin");
         employee.setEmail(seedProperties.adminEmail());
         employee.setPassword(passwordEncoder.encode(seedProperties.adminCredential()));
         employee.setRole(seedProperties.adminRole());

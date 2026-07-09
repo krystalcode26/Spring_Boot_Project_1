@@ -1,5 +1,6 @@
 package net.javaguides.ems.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -20,8 +21,15 @@ public class EmployeeDto {
 
   private Long empId;
 
-  @NotBlank(message = "Employee name is required")
-  private String empName;
+  @NotBlank(message = "First name is required")
+  private String firstName;
+
+  @NotBlank(message = "Last name is required")
+  private String lastName;
+
+  @NotBlank(message = "Email is required")
+  @Email(message = "Email must be valid")
+  private String email;
 
   @NotEmpty(message = "At least one department id is required")
   private List<Integer> departmentIds;

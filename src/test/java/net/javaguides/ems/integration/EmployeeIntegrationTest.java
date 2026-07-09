@@ -53,7 +53,9 @@ class EmployeeIntegrationTest {
   @Order(2)
   void createEmployee_returns201() {
     EmployeeDto employee = new EmployeeDto();
-    employee.setEmpName("Integration User");
+    employee.setFirstName("Integration");
+    employee.setLastName("User");
+    employee.setEmail("integration.user@example.com");
     employee.setDepartmentIds(List.of(departmentId));
     employee.setAge(30);
     employee.setSalary(new BigDecimal("75000"));
@@ -67,7 +69,9 @@ class EmployeeIntegrationTest {
         .expectBody(EmployeeDto.class)
         .value(dto -> {
           assertThat(dto).isNotNull();
-          assertThat(dto.getEmpName()).isEqualTo("Integration User");
+          assertThat(dto.getFirstName()).isEqualTo("Integration");
+          assertThat(dto.getLastName()).isEqualTo("User");
+          assertThat(dto.getEmail()).isEqualTo("integration.user@example.com");
           employeeId = dto.getEmpId();
         });
   }
@@ -83,7 +87,9 @@ class EmployeeIntegrationTest {
         .value(dto -> {
           assertThat(dto).isNotNull();
           assertThat(dto.getEmpId()).isEqualTo(employeeId);
-          assertThat(dto.getEmpName()).isEqualTo("Integration User");
+          assertThat(dto.getFirstName()).isEqualTo("Integration");
+          assertThat(dto.getLastName()).isEqualTo("User");
+          assertThat(dto.getEmail()).isEqualTo("integration.user@example.com");
         });
   }
 
@@ -91,7 +97,9 @@ class EmployeeIntegrationTest {
   @Order(4)
   void updateEmployee_returns200() {
     EmployeeDto updated = new EmployeeDto();
-    updated.setEmpName("Updated User");
+    updated.setFirstName("Updated");
+    updated.setLastName("User");
+    updated.setEmail("updated.user@example.com");
     updated.setDepartmentIds(List.of(departmentId));
     updated.setAge(31);
     updated.setSalary(new BigDecimal("80000"));
@@ -105,7 +113,8 @@ class EmployeeIntegrationTest {
         .expectBody(EmployeeDto.class)
         .value(dto -> {
           assertThat(dto).isNotNull();
-          assertThat(dto.getEmpName()).isEqualTo("Updated User");
+          assertThat(dto.getFirstName()).isEqualTo("Updated");
+          assertThat(dto.getLastName()).isEqualTo("User");
         });
   }
 

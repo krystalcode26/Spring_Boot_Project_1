@@ -18,7 +18,12 @@ public class DepartmentRepository {
   @Transactional
   public Department save(Department department) {
     if (department.getDeptId() == null) {
+      Integer nextId = entityManager
+          .createQuery("SELECT COALESCE(MAX(d.deptId), 0) + 1 FROM Department d", Integer.class)
+          .getSingleResult();
+      department.setDeptId(nextId);
       entityManager.persist(department);
+      entityManager.flush();
       return department;
     }
     return entityManager.merge(department);

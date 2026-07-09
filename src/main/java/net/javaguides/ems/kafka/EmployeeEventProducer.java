@@ -3,6 +3,7 @@ package net.javaguides.ems.kafka;
 import lombok.RequiredArgsConstructor;
 import net.javaguides.ems.config.KafkaProperties;
 import net.javaguides.ems.entity.Employee;
+import net.javaguides.ems.mapper.EmployeeMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -43,7 +44,7 @@ public class EmployeeEventProducer {
         UUID.randomUUID().toString(),
         eventType,
         employee.getEmpId(),
-        employee.getEmpName(),
+        EmployeeMapper.displayName(employee),
         employee.getEmail(),
         Instant.now()));
   }
