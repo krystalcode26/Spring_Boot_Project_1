@@ -20,6 +20,7 @@ public class EmployeeMapper {
         resolveFirstName(employee),
         resolveLastName(employee),
         employee.getEmail(),
+        employee.getDepartment(),
         departmentIds,
         employee.getAge(),
         employee.getSalary()
@@ -31,6 +32,7 @@ public class EmployeeMapper {
     employee.setEmpId(employeeDto.getEmpId());
     applyNameFields(employee, employeeDto.getFirstName(), employeeDto.getLastName());
     employee.setEmail(employeeDto.getEmail());
+    employee.setDepartment(employeeDto.getDepartment());
     employee.setAge(employeeDto.getAge());
     employee.setSalary(employeeDto.getSalary());
     employee.setDepartments(new HashSet<>());

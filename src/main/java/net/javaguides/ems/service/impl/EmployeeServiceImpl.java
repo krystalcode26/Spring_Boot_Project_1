@@ -2,6 +2,7 @@ package net.javaguides.ems.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import net.javaguides.ems.dto.EmployeeDto;
+import net.javaguides.ems.dto.PagedResponse;
 import net.javaguides.ems.entity.Department;
 import net.javaguides.ems.entity.Employee;
 import net.javaguides.ems.exception.ResourceNotFoundException;
@@ -14,7 +15,10 @@ import net.javaguides.ems.service.EmployeeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +36,7 @@ public class EmployeeServiceImpl implements EmployeeService {
   private final ObjectProvider<EmployeeEventProducer> employeeEventProducerProvider;
 
   @Override
+  @Transactional
   public EmployeeDto createEmployee(EmployeeDto employeeDto) {
     log.info("Creating employee email={}", employeeDto.getEmail());
     Employee employee = EmployeeMapper.mapToEmployee(employeeDto);
@@ -43,6 +48,7 @@ public class EmployeeServiceImpl implements EmployeeService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public EmployeeDto getEmployeeById(Long empId) {
     log.info("Fetching employee from database, id={}", empId);
     Employee employee = employeeRepository.findById(empId)
@@ -52,6 +58,7 @@ public class EmployeeServiceImpl implements EmployeeService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<EmployeeDto> getAllEmployees() {
     log.info("Fetching all employees from database");
     return employeeRepository.findAll().stream()
@@ -60,6 +67,25 @@ public class EmployeeServiceImpl implements EmployeeService {
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public PagedResponse<EmployeeDto> getEmployeesPaged(String query, Pageable pageable) {
+    log.info("Searching employees query='{}' page={} size={}", query, pageable.getPageNumber(), pageable.getPageSize());
+    Page<Employee> page = searchEmployees(query, pageable);
+    List<EmployeeDto> content = page.getContent().stream()
+        .map(EmployeeMapper::mapToEmployeeDto)
+        .collect(Collectors.toList());
+
+    return new PagedResponse<>(
+        content,
+        page.getNumber(),
+        page.getSize(),
+        page.getTotalElements(),
+        page.getTotalPages(),
+        page.isLast());
+  }
+
+  @Override
+  @Transactional
   public EmployeeDto updateEmployee(Long empId, EmployeeDto updatedEmployee) {
     log.info("Updating employee id={}", empId);
     Employee employee = employeeRepository.findById(empId).orElseThrow(
@@ -68,6 +94,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     EmployeeMapper.applyNameFields(employee, updatedEmployee.getFirstName(), updatedEmployee.getLastName());
     employee.setEmail(updatedEmployee.getEmail());
+    employee.setDepartment(updatedEmployee.getDepartment());
     employee.setAge(updatedEmployee.getAge());
     employee.setSalary(updatedEmployee.getSalary());
     employee.setDepartments(resolveDepartments(updatedEmployee.getDepartmentIds()));
@@ -78,6 +105,7 @@ public class EmployeeServiceImpl implements EmployeeService {
   }
 
   @Override
+  @Transactional
   public void deleteEmployee(Long empId) {
     log.info("Deleting employee id={}", empId);
     Employee employee = employeeRepository.findById(empId).orElseThrow(
@@ -85,6 +113,17 @@ public class EmployeeServiceImpl implements EmployeeService {
     );
     employeeRepository.deleteById(empId);
     publishEvent(EmployeeEventType.DELETED, employee);
+  }
+
+  private Page<Employee> searchEmployees(String query, Pageable pageable) {
+    if (query == null || query.isBlank()) {
+      return employeeRepository.findAll(pageable);
+    }
+
+    String term = query.trim();
+    return employeeRepository
+        .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrDepartmentContainingIgnoreCase(
+            term, term, term, term, pageable);
   }
 
   private Set<Department> resolveDepartments(List<Integer> departmentIds) {

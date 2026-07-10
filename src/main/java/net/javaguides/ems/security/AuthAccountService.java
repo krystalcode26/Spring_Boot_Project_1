@@ -6,12 +6,14 @@ import net.javaguides.ems.entity.Student;
 import net.javaguides.ems.mapper.EmployeeMapper;
 import net.javaguides.ems.repository.EmployeeRepository;
 import net.javaguides.ems.repository.StudentRepository;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Profile("auth")
 public class AuthAccountService {
 
   private final StudentRepository studentRepository;
