@@ -56,6 +56,7 @@ class EmployeeIntegrationTest {
     employee.setFirstName("Integration");
     employee.setLastName("User");
     employee.setEmail("integration.user@example.com");
+    employee.setDepartment("Engineering");
     employee.setDepartmentIds(List.of(departmentId));
     employee.setAge(30);
     employee.setSalary(new BigDecimal("75000"));
@@ -72,6 +73,7 @@ class EmployeeIntegrationTest {
           assertThat(dto.getFirstName()).isEqualTo("Integration");
           assertThat(dto.getLastName()).isEqualTo("User");
           assertThat(dto.getEmail()).isEqualTo("integration.user@example.com");
+          assertThat(dto.getDepartment()).isEqualTo("Engineering");
           employeeId = dto.getEmpId();
         });
   }
@@ -90,6 +92,7 @@ class EmployeeIntegrationTest {
           assertThat(dto.getFirstName()).isEqualTo("Integration");
           assertThat(dto.getLastName()).isEqualTo("User");
           assertThat(dto.getEmail()).isEqualTo("integration.user@example.com");
+          assertThat(dto.getDepartment()).isEqualTo("Engineering");
         });
   }
 
@@ -100,6 +103,7 @@ class EmployeeIntegrationTest {
     updated.setFirstName("Updated");
     updated.setLastName("User");
     updated.setEmail("updated.user@example.com");
+    updated.setDepartment("HR");
     updated.setDepartmentIds(List.of(departmentId));
     updated.setAge(31);
     updated.setSalary(new BigDecimal("80000"));
@@ -115,6 +119,7 @@ class EmployeeIntegrationTest {
           assertThat(dto).isNotNull();
           assertThat(dto.getFirstName()).isEqualTo("Updated");
           assertThat(dto.getLastName()).isEqualTo("User");
+          assertThat(dto.getDepartment()).isEqualTo("HR");
         });
   }
 

@@ -68,6 +68,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     EmployeeMapper.applyNameFields(employee, updatedEmployee.getFirstName(), updatedEmployee.getLastName());
     employee.setEmail(updatedEmployee.getEmail());
+    employee.setDepartment(updatedEmployee.getDepartment());
     employee.setAge(updatedEmployee.getAge());
     employee.setSalary(updatedEmployee.getSalary());
     employee.setDepartments(resolveDepartments(updatedEmployee.getDepartmentIds()));

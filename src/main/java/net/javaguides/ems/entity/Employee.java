@@ -49,6 +49,10 @@ public class Employee {
   @Column(name = "email")
   private String email;
 
+  /** Nullable for existing rows that predate this additive column. */
+  @Column(name = "department")
+  private String department;
+
   @Column(name = "password")
   private String password;
 

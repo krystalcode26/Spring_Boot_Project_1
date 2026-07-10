@@ -25,6 +25,7 @@ class EmployeeMapperTest {
     employee.setLastName("Smith");
     employee.setEmpName("Alice Smith");
     employee.setEmail("alice@example.com");
+    employee.setDepartment("Engineering");
     employee.setAge(30);
     employee.setSalary(new BigDecimal("75000.00"));
     employee.setDepartments(Set.of(department));
@@ -35,6 +36,7 @@ class EmployeeMapperTest {
     assertThat(dto.getFirstName()).isEqualTo("Alice");
     assertThat(dto.getLastName()).isEqualTo("Smith");
     assertThat(dto.getEmail()).isEqualTo("alice@example.com");
+    assertThat(dto.getDepartment()).isEqualTo("Engineering");
     assertThat(dto.getDepartmentIds()).containsExactly(1);
     assertThat(dto.getAge()).isEqualTo(30);
     assertThat(dto.getSalary()).isEqualByComparingTo("75000.00");
@@ -59,6 +61,7 @@ class EmployeeMapperTest {
         "Bob",
         "Jones",
         "bob@example.com",
+        "Sales",
         List.of(2, 3),
         28,
         new BigDecimal("65000.00")
@@ -71,6 +74,7 @@ class EmployeeMapperTest {
     assertThat(employee.getLastName()).isEqualTo("Jones");
     assertThat(employee.getEmpName()).isEqualTo("Bob Jones");
     assertThat(employee.getEmail()).isEqualTo("bob@example.com");
+    assertThat(employee.getDepartment()).isEqualTo("Sales");
     assertThat(employee.getAge()).isEqualTo(28);
     assertThat(employee.getSalary()).isEqualByComparingTo("65000.00");
     assertThat(employee.getDepartments()).isEmpty();
