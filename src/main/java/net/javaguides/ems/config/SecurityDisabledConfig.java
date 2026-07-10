@@ -1,16 +1,20 @@
 package net.javaguides.ems.config;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
+/**
+ * Open API — default when the {@code auth} profile is not active
+ * ({@code ./mvnw spring-boot:run} with no profile).
+ */
 @Configuration
 @EnableWebSecurity
-@ConditionalOnProperty(name = "security.enabled", havingValue = "false")
+@Profile("!auth")
 public class SecurityDisabledConfig {
 
   @Bean

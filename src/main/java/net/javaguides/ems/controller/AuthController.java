@@ -9,7 +9,7 @@ import net.javaguides.ems.security.AuthAccount;
 import net.javaguides.ems.security.AuthAccountService;
 import net.javaguides.ems.security.JwtProperties;
 import net.javaguides.ems.security.JwtService;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,7 +25,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "security.enabled", havingValue = "true", matchIfMissing = true)
+@Profile("auth")
 public class AuthController {
 
   private final AuthenticationManager authenticationManager;

@@ -9,14 +9,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 @NullMarked
-@ConditionalOnProperty(name = "security.enabled", havingValue = "true", matchIfMissing = true)
+@Profile("auth")
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 

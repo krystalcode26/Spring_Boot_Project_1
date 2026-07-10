@@ -5,9 +5,9 @@ import net.javaguides.ems.security.JsonAccessDeniedHandler;
 import net.javaguides.ems.security.JsonAuthenticationEntryPoint;
 import net.javaguides.ems.security.JwtAuthenticationFilter;
 import net.javaguides.ems.security.OAuth2LoginSuccessHandler;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -20,11 +20,14 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+/**
+ * JWT + role enforcement — active only with {@code --spring.profiles.active=auth}.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "security.enabled", havingValue = "true", matchIfMissing = true)
+@Profile("auth")
 public class SecurityConfig {
 
   private static final String API_PATTERN = "/api/**";
@@ -44,11 +47,11 @@ public class SecurityConfig {
         .cors(cors -> cors.configurationSource(corsConfigurationSource))
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+            .requestMatchers("/actuator/**", "/h2-console/**").permitAll()
             .requestMatchers("/oauth2/**", "/login/**").permitAll()
             .requestMatchers("/name/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/log/**").permitAll()
-            .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+            .requestMatchers("/api/auth/login").permitAll()
             .requestMatchers(HttpMethod.GET, API_PATTERN).hasAnyRole(ROLE_USER, ROLE_ADMIN)
             .requestMatchers(HttpMethod.POST, API_PATTERN).hasRole(ROLE_ADMIN)
             .requestMatchers(HttpMethod.PUT, API_PATTERN).hasRole(ROLE_ADMIN)
