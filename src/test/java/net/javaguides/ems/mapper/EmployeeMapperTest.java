@@ -21,7 +21,10 @@ class EmployeeMapperTest {
 
     Employee employee = new Employee();
     employee.setEmpId(10L);
-    employee.setEmpName("Alice");
+    employee.setFirstName("Alice");
+    employee.setLastName("Smith");
+    employee.setEmpName("Alice Smith");
+    employee.setEmail("alice@example.com");
     employee.setAge(30);
     employee.setSalary(new BigDecimal("75000.00"));
     employee.setDepartments(Set.of(department));
@@ -29,10 +32,24 @@ class EmployeeMapperTest {
     EmployeeDto dto = EmployeeMapper.mapToEmployeeDto(employee);
 
     assertThat(dto.getEmpId()).isEqualTo(10L);
-    assertThat(dto.getEmpName()).isEqualTo("Alice");
+    assertThat(dto.getFirstName()).isEqualTo("Alice");
+    assertThat(dto.getLastName()).isEqualTo("Smith");
+    assertThat(dto.getEmail()).isEqualTo("alice@example.com");
     assertThat(dto.getDepartmentIds()).containsExactly(1);
     assertThat(dto.getAge()).isEqualTo(30);
     assertThat(dto.getSalary()).isEqualByComparingTo("75000.00");
+  }
+
+  @Test
+  void mapToEmployeeDto_splitsLegacyEmpName() {
+    Employee employee = new Employee();
+    employee.setEmpId(11L);
+    employee.setEmpName("Legacy User");
+
+    EmployeeDto dto = EmployeeMapper.mapToEmployeeDto(employee);
+
+    assertThat(dto.getFirstName()).isEqualTo("Legacy");
+    assertThat(dto.getLastName()).isEqualTo("User");
   }
 
   @Test
@@ -40,6 +57,8 @@ class EmployeeMapperTest {
     EmployeeDto dto = new EmployeeDto(
         20L,
         "Bob",
+        "Jones",
+        "bob@example.com",
         List.of(2, 3),
         28,
         new BigDecimal("65000.00")
@@ -48,7 +67,10 @@ class EmployeeMapperTest {
     Employee employee = EmployeeMapper.mapToEmployee(dto);
 
     assertThat(employee.getEmpId()).isEqualTo(20L);
-    assertThat(employee.getEmpName()).isEqualTo("Bob");
+    assertThat(employee.getFirstName()).isEqualTo("Bob");
+    assertThat(employee.getLastName()).isEqualTo("Jones");
+    assertThat(employee.getEmpName()).isEqualTo("Bob Jones");
+    assertThat(employee.getEmail()).isEqualTo("bob@example.com");
     assertThat(employee.getAge()).isEqualTo(28);
     assertThat(employee.getSalary()).isEqualByComparingTo("65000.00");
     assertThat(employee.getDepartments()).isEmpty();

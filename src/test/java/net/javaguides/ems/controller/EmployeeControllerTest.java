@@ -43,36 +43,42 @@ class EmployeeControllerTest {
 
   @Test
   void createEmployee_returns201() throws Exception {
-    EmployeeDto saved = new EmployeeDto(1L, "Alice", List.of(1), 30, new BigDecimal("75000"));
+    EmployeeDto saved = new EmployeeDto(
+        1L, "Alice", "Smith", "alice@example.com", List.of(1), 30, new BigDecimal("75000"));
     when(employeeService.createEmployee(any())).thenReturn(saved);
 
     mockMvc.perform(post("/api/employees")
             .contentType(MediaType.APPLICATION_JSON)
             .content("""
-                {"empName":"Alice","departmentIds":[1],"age":30,"salary":75000}
+                {"firstName":"Alice","lastName":"Smith","email":"alice@example.com","departmentIds":[1],"age":30,"salary":75000}
                 """))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.empName").value("Alice"));
+        .andExpect(jsonPath("$.firstName").value("Alice"))
+        .andExpect(jsonPath("$.lastName").value("Smith"))
+        .andExpect(jsonPath("$.email").value("alice@example.com"));
   }
 
   @Test
   void getEmployeeById_returns200() throws Exception {
     when(employeeService.getEmployeeById(1L))
-        .thenReturn(new EmployeeDto(1L, "Alice", List.of(1), 30, new BigDecimal("75000")));
+        .thenReturn(new EmployeeDto(
+            1L, "Alice", "Smith", "alice@example.com", List.of(1), 30, new BigDecimal("75000")));
 
     mockMvc.perform(get("/api/employees/1"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.empName").value("Alice"));
+        .andExpect(jsonPath("$.firstName").value("Alice"))
+        .andExpect(jsonPath("$.email").value("alice@example.com"));
   }
 
   @Test
   void getAllEmployees_returns200() throws Exception {
     when(employeeService.getAllEmployees()).thenReturn(List.of(
-        new EmployeeDto(1L, "Alice", List.of(1), 30, new BigDecimal("75000"))));
+        new EmployeeDto(
+            1L, "Alice", "Smith", "alice@example.com", List.of(1), 30, new BigDecimal("75000"))));
 
     mockMvc.perform(get("/api/employees"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].empName").value("Alice"));
+        .andExpect(jsonPath("$[0].firstName").value("Alice"));
   }
 
   @Test
@@ -87,26 +93,27 @@ class EmployeeControllerTest {
   @Test
   void updateEmployee_returns200() throws Exception {
     when(employeeService.updateEmployee(any(), any()))
-        .thenReturn(new EmployeeDto(1L, "Alice Updated", List.of(1), 31, new BigDecimal("80000")));
+        .thenReturn(new EmployeeDto(
+            1L, "Alice", "Updated", "alice.updated@example.com", List.of(1), 31, new BigDecimal("80000")));
 
     mockMvc.perform(put("/api/employees/1")
             .contentType(MediaType.APPLICATION_JSON)
             .content("""
-                {"empName":"Alice Updated","departmentIds":[1],"age":31,"salary":80000}
+                {"firstName":"Alice","lastName":"Updated","email":"alice.updated@example.com","departmentIds":[1],"age":31,"salary":80000}
                 """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.empName").value("Alice Updated"));
+        .andExpect(jsonPath("$.lastName").value("Updated"));
   }
 
   @Test
-  void createEmployee_returns400_whenEmpNameBlank() throws Exception {
+  void createEmployee_returns400_whenFirstNameBlank() throws Exception {
     mockMvc.perform(post("/api/employees")
             .contentType(MediaType.APPLICATION_JSON)
             .content("""
-                {"empName":"","departmentIds":[1],"age":30,"salary":75000}
+                {"firstName":"","lastName":"Smith","email":"alice@example.com","departmentIds":[1],"age":30,"salary":75000}
                 """))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.errors.empName").exists());
+        .andExpect(jsonPath("$.errors.firstName").exists());
 
     verify(employeeService, never()).createEmployee(any());
   }

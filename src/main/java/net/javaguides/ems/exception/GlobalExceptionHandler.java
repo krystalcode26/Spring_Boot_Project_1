@@ -34,6 +34,12 @@ public class GlobalExceptionHandler {
     return new ErrorResponse(404, ex.getMessage(), LocalDateTime.now(), null);
   }
 
+  @ExceptionHandler(BadRequestException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponse handleBadRequest(BadRequestException ex) {
+    return new ErrorResponse(400, ex.getMessage(), LocalDateTime.now(), null);
+  }
+
   @ExceptionHandler(NoResourceFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
   public ErrorResponse handleNoResource(NoResourceFoundException ex){

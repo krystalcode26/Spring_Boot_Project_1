@@ -3,6 +3,7 @@ package net.javaguides.ems.security;
 import lombok.RequiredArgsConstructor;
 import net.javaguides.ems.entity.Employee;
 import net.javaguides.ems.entity.Student;
+import net.javaguides.ems.mapper.EmployeeMapper;
 import net.javaguides.ems.repository.EmployeeRepository;
 import net.javaguides.ems.repository.StudentRepository;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class AuthAccountService {
   private AuthAccount fromEmployee(Employee employee) {
     return new AuthAccount(
         employee.getEmail(),
-        employee.getEmpName(),
+        EmployeeMapper.displayName(employee),
         employee.getRole(),
         employee.getPassword());
   }

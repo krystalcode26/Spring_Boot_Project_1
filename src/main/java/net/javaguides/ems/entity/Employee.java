@@ -34,16 +34,25 @@ public class Employee {
   @Column(name = "empname", nullable = false)
   private String empName;
 
+  @Column(name = "firstname")
+  private String firstName;
+
+  @Column(name = "lastname")
+  private String lastName;
+
   @Column(name = "age")
   private Integer age;
 
   @Column(name = "salary")
   private BigDecimal salary;
 
+  @Column(name = "email")
   private String email;
 
+  @Column(name = "password")
   private String password;
 
+  @Column(name = "role")
   private String role;
 
   @ManyToMany

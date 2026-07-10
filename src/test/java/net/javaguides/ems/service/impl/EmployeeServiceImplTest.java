@@ -48,11 +48,15 @@ class EmployeeServiceImplTest {
 
   @Test
   void createEmployee_resolvesDepartmentsAndSaves() {
-    EmployeeDto request = new EmployeeDto(null, "Alice", List.of(1), 30, new BigDecimal("75000"));
+    EmployeeDto request = new EmployeeDto(
+        null, "Alice", "Smith", "alice@example.com", List.of(1), 30, new BigDecimal("75000"));
     Department department = new Department(1, "Engineering", null);
     Employee saved = new Employee();
     saved.setEmpId(1L);
-    saved.setEmpName("Alice");
+    saved.setFirstName("Alice");
+    saved.setLastName("Smith");
+    saved.setEmpName("Alice Smith");
+    saved.setEmail("alice@example.com");
     saved.setAge(30);
     saved.setSalary(new BigDecimal("75000"));
     saved.setDepartments(Set.of(department));
@@ -66,6 +70,8 @@ class EmployeeServiceImplTest {
     EmployeeDto response = employeeService.createEmployee(request);
 
     assertThat(response.getEmpId()).isEqualTo(1L);
+    assertThat(response.getFirstName()).isEqualTo("Alice");
+    assertThat(response.getEmail()).isEqualTo("alice@example.com");
     assertThat(response.getDepartmentIds()).containsExactly(1);
     verify(departmentRepository).findById(1);
     verify(employeeEventProducer).publish(eq(EmployeeEventType.CREATED), any(Employee.class));
@@ -75,7 +81,10 @@ class EmployeeServiceImplTest {
   void getEmployeeById_returnsDtoWhenFound() {
     Employee employee = new Employee();
     employee.setEmpId(1L);
-    employee.setEmpName("Alice");
+    employee.setFirstName("Alice");
+    employee.setLastName("Smith");
+    employee.setEmpName("Alice Smith");
+    employee.setEmail("alice@example.com");
     employee.setDepartments(Set.of());
 
     when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
@@ -83,7 +92,8 @@ class EmployeeServiceImplTest {
     EmployeeDto dto = employeeService.getEmployeeById(1L);
 
     assertThat(dto.getEmpId()).isEqualTo(1L);
-    assertThat(dto.getEmpName()).isEqualTo("Alice");
+    assertThat(dto.getFirstName()).isEqualTo("Alice");
+    assertThat(dto.getLastName()).isEqualTo("Smith");
     verify(employeeRepository).findById(1L);
   }
 
@@ -100,21 +110,23 @@ class EmployeeServiceImplTest {
   void getAllEmployees_returnsMappedList() {
     Employee employee = new Employee();
     employee.setEmpId(1L);
-    employee.setEmpName("Alice");
+    employee.setFirstName("Alice");
+    employee.setLastName("Smith");
+    employee.setEmpName("Alice Smith");
     employee.setDepartments(Set.of());
     when(employeeRepository.findAll()).thenReturn(List.of(employee));
 
     List<EmployeeDto> employees = employeeService.getAllEmployees();
 
     assertThat(employees).hasSize(1);
-    assertThat(employees.get(0).getEmpName()).isEqualTo("Alice");
+    assertThat(employees.get(0).getFirstName()).isEqualTo("Alice");
   }
 
   @Test
   void deleteEmployee_deletesWhenFound() {
     Employee employee = new Employee();
     employee.setEmpId(1L);
-    employee.setEmpName("Alice");
+    employee.setEmpName("Alice Smith");
     employee.setDepartments(Set.of());
     when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
     when(employeeEventProducerProvider.getIfAvailable()).thenReturn(employeeEventProducer);
@@ -131,16 +143,23 @@ class EmployeeServiceImplTest {
   void updateEmployee_updatesDepartmentsAndFields() {
     Employee existing = new Employee();
     existing.setEmpId(1L);
-    existing.setEmpName("Alice");
+    existing.setFirstName("Alice");
+    existing.setLastName("Smith");
+    existing.setEmpName("Alice Smith");
+    existing.setEmail("alice@example.com");
     existing.setAge(30);
     existing.setSalary(new BigDecimal("75000"));
     existing.setDepartments(Set.of());
 
     Department engineering = new Department(2, "Engineering", null);
-    EmployeeDto update = new EmployeeDto(null, "Alice Updated", List.of(2), 31, new BigDecimal("80000"));
+    EmployeeDto update = new EmployeeDto(
+        null, "Alice", "Updated", "alice.updated@example.com", List.of(2), 31, new BigDecimal("80000"));
     Employee saved = new Employee();
     saved.setEmpId(1L);
+    saved.setFirstName("Alice");
+    saved.setLastName("Updated");
     saved.setEmpName("Alice Updated");
+    saved.setEmail("alice.updated@example.com");
     saved.setAge(31);
     saved.setSalary(new BigDecimal("80000"));
     saved.setDepartments(Set.of(engineering));
@@ -154,7 +173,8 @@ class EmployeeServiceImplTest {
 
     EmployeeDto response = employeeService.updateEmployee(1L, update);
 
-    assertThat(response.getEmpName()).isEqualTo("Alice Updated");
+    assertThat(response.getLastName()).isEqualTo("Updated");
+    assertThat(response.getEmail()).isEqualTo("alice.updated@example.com");
     assertThat(response.getDepartmentIds()).containsExactly(2);
     verify(employeeEventProducer).publish(eq(EmployeeEventType.UPDATED), any(Employee.class));
   }
@@ -162,7 +182,8 @@ class EmployeeServiceImplTest {
   @Test
   void updateEmployee_throwsWhenEmployeeNotFound() {
     when(employeeRepository.findById(99L)).thenReturn(Optional.empty());
-    EmployeeDto update = new EmployeeDto(null, "X", List.of(1), 20, new BigDecimal("1"));
+    EmployeeDto update = new EmployeeDto(
+        null, "X", "Y", "x@example.com", List.of(1), 20, new BigDecimal("1"));
 
     assertThatThrownBy(() -> employeeService.updateEmployee(99L, update))
         .isInstanceOf(ResourceNotFoundException.class);
@@ -171,7 +192,8 @@ class EmployeeServiceImplTest {
   @Test
   void createEmployee_throwsWhenDepartmentMissing() {
     when(departmentRepository.findById(99)).thenReturn(Optional.empty());
-    EmployeeDto request = new EmployeeDto(null, "Alice", List.of(99), 30, new BigDecimal("75000"));
+    EmployeeDto request = new EmployeeDto(
+        null, "Alice", "Smith", "alice@example.com", List.of(99), 30, new BigDecimal("75000"));
 
     assertThatThrownBy(() -> employeeService.createEmployee(request))
         .isInstanceOf(ResourceNotFoundException.class)
