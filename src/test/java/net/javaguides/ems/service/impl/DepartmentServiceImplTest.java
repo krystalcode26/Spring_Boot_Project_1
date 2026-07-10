@@ -71,4 +71,37 @@ class DepartmentServiceImplTest {
     assertThat(departments).hasSize(1);
     assertThat(departments.get(0).getDeptName()).isEqualTo("Engineering");
   }
+
+  @Test
+  void updateDepartment_updatesNameWhenFound() {
+    Department existing = new Department(1, "Engineering", null);
+    DepartmentDto update = new DepartmentDto(null, "Platform");
+    Department saved = new Department(1, "Platform", null);
+
+    when(departmentRepository.findById(1)).thenReturn(Optional.of(existing));
+    when(departmentRepository.save(existing)).thenReturn(saved);
+
+    DepartmentDto response = departmentService.updateDepartment(1, update);
+
+    assertThat(response.getDeptName()).isEqualTo("Platform");
+    verify(departmentRepository).save(existing);
+  }
+
+  @Test
+  void updateDepartment_throwsWhenNotFound() {
+    when(departmentRepository.findById(99)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> departmentService.updateDepartment(99, new DepartmentDto(null, "X")))
+        .isInstanceOf(ResourceNotFoundException.class);
+  }
+
+  @Test
+  void deleteDepartment_deletesWhenEmployeesLinked() {
+    Department department = new Department(1, "Engineering", null);
+    when(departmentRepository.findById(1)).thenReturn(Optional.of(department));
+
+    departmentService.deleteDepartment(1);
+
+    verify(departmentRepository).deleteById(1);
+  }
 }

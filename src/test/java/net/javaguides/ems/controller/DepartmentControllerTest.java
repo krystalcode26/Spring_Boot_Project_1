@@ -15,8 +15,10 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -62,5 +64,25 @@ class DepartmentControllerTest {
     mockMvc.perform(get("/api/departments"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].deptName").value("Engineering"));
+  }
+
+  @Test
+  void updateDepartment_returns200() throws Exception {
+    when(departmentService.updateDepartment(any(), any())).thenReturn(new DepartmentDto(1, "HR"));
+
+    mockMvc.perform(put("/api/departments/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("""
+                {"deptName":"HR"}
+                """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.deptName").value("HR"));
+  }
+
+  @Test
+  void deleteDepartment_returns200() throws Exception {
+    mockMvc.perform(delete("/api/departments/1"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").value("Department deleted successfully"));
   }
 }
