@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.math.BigDecimal;
+
 @Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties(AuthSeedProperties.class)
@@ -41,6 +43,8 @@ public class DataInitializer {
         employee.setFirstName("System");
         employee.setLastName("Admin");
         employee.setEmpName("System Admin");
+        employee.setAge(30);
+        employee.setSalary(BigDecimal.ZERO);
         employee.setEmail(seedProperties.adminEmail());
         employee.setPassword(passwordEncoder.encode(seedProperties.adminCredential()));
         employee.setRole(seedProperties.adminRole());

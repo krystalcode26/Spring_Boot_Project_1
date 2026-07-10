@@ -39,6 +39,16 @@ ALTER TABLE employee ADD COLUMN IF NOT EXISTS role VARCHAR(50);
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_employee_email ON employee (email);
 
+-- Ensure empid auto-increments even if the table was created earlier without BIGSERIAL
+CREATE SEQUENCE IF NOT EXISTS employee_empid_seq;
+SELECT setval(
+    'employee_empid_seq',
+    COALESCE((SELECT MAX(empid) FROM employee), 0) + 1,
+    false
+);
+ALTER TABLE employee ALTER COLUMN empid SET DEFAULT nextval('employee_empid_seq');
+ALTER SEQUENCE employee_empid_seq OWNED BY employee.empid;
+
 CREATE TABLE IF NOT EXISTS department (
     deptid SERIAL PRIMARY KEY,
     deptname VARCHAR(255) NOT NULL
