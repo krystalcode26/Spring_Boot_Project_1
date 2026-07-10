@@ -193,8 +193,6 @@ services:
         condition: service_healthy
       vault-init:
         condition: service_completed_successfully
-      kafka-init:
-        condition: service_completed_successfully
 
 volumes:
   jenkins_home:
