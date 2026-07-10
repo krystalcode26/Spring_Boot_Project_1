@@ -3,7 +3,9 @@ package net.javaguides.ems.controller;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import net.javaguides.ems.dto.EmployeeDto;
+import net.javaguides.ems.dto.PagedResponse;
 import net.javaguides.ems.service.EmployeeService;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -28,6 +31,21 @@ public class EmployeeController {
   public ResponseEntity<EmployeeDto> createEmployee(@Valid @RequestBody EmployeeDto employeeDto) {
     EmployeeDto savedEmployee = employeeService.createEmployee(employeeDto);
     return new ResponseEntity<>(savedEmployee, HttpStatus.CREATED);
+  }
+
+  /**
+   * Server-side search + pagination. Kept as a separate endpoint so the original
+   * {@code GET /api/employees} list API remains unchanged.
+   */
+  @GetMapping("/search")
+  public ResponseEntity<PagedResponse<EmployeeDto>> searchEmployees(
+      @RequestParam(defaultValue = "") String query,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "5") int size) {
+    int safeSize = Math.min(Math.max(size, 1), 50);
+    int safePage = Math.max(page, 0);
+    return ResponseEntity.ok(
+        employeeService.getEmployeesPaged(query, PageRequest.of(safePage, safeSize)));
   }
 
   @GetMapping("{id}")

@@ -1,6 +1,7 @@
 package net.javaguides.ems.service.impl;
 
 import net.javaguides.ems.dto.EmployeeDto;
+import net.javaguides.ems.dto.PagedResponse;
 import net.javaguides.ems.entity.Department;
 import net.javaguides.ems.entity.Employee;
 import net.javaguides.ems.exception.ResourceNotFoundException;
@@ -14,6 +15,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -202,6 +206,42 @@ class EmployeeServiceImplTest {
     assertThatThrownBy(() -> employeeService.createEmployee(request))
         .isInstanceOf(ResourceNotFoundException.class)
         .hasMessageContaining("99");
+  }
+
+  @Test
+  void getEmployeesPaged_returnsMatchingPage() {
+    Employee employee = new Employee();
+    employee.setEmpId(1L);
+    employee.setFirstName("Alice");
+    employee.setLastName("Smith");
+    employee.setEmail("alice@example.com");
+    employee.setDepartment("Engineering");
+    employee.setDepartments(Set.of());
+
+    Pageable pageable = PageRequest.of(0, 5);
+    when(employeeRepository
+        .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrDepartmentContainingIgnoreCase(
+            "alice", "alice", "alice", "alice", pageable))
+        .thenReturn(new PageImpl<>(List.of(employee), pageable, 1));
+
+    PagedResponse<EmployeeDto> response = employeeService.getEmployeesPaged("alice", pageable);
+
+    assertThat(response.getContent()).hasSize(1);
+    assertThat(response.getContent().get(0).getFirstName()).isEqualTo("Alice");
+    assertThat(response.getTotalElements()).isEqualTo(1);
+    assertThat(response.getPage()).isEqualTo(0);
+  }
+
+  @Test
+  void getEmployeesPaged_blankQuery_usesFindAll() {
+    Pageable pageable = PageRequest.of(0, 5);
+    when(employeeRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(), pageable, 0));
+
+    PagedResponse<EmployeeDto> response = employeeService.getEmployeesPaged("  ", pageable);
+
+    assertThat(response.getContent()).isEmpty();
+    assertThat(response.getTotalElements()).isZero();
+    verify(employeeRepository).findAll(pageable);
   }
 
   @Test

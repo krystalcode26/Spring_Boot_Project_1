@@ -2,6 +2,7 @@ package net.javaguides.ems.controller;
 
 import net.javaguides.ems.exception.GlobalExceptionHandler;
 import net.javaguides.ems.dto.EmployeeDto;
+import net.javaguides.ems.dto.PagedResponse;
 import net.javaguides.ems.service.EmployeeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -132,5 +133,23 @@ class EmployeeControllerTest {
         .andExpect(jsonPath("$.errors.department").exists());
 
     verify(employeeService, never()).createEmployee(any());
+  }
+
+  @Test
+  void searchEmployees_returns200() throws Exception {
+    PagedResponse<EmployeeDto> page = new PagedResponse<>(
+        List.of(new EmployeeDto(
+            1L, "Alice", "Smith", "alice@example.com", "Engineering", List.of(1), 30, new BigDecimal("75000"))),
+        0, 5, 1, 1, true);
+    when(employeeService.getEmployeesPaged(any(), any())).thenReturn(page);
+
+    mockMvc.perform(get("/api/employees/search")
+            .param("query", "alice")
+            .param("page", "0")
+            .param("size", "5"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].firstName").value("Alice"))
+        .andExpect(jsonPath("$.totalElements").value(1))
+        .andExpect(jsonPath("$.page").value(0));
   }
 }
